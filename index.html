@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AvaliaTrilhas</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <div id="tela-login" class="login-overlay">
+        <div class="login-box">
+            <h2>🔐 Acesso do Professor</h2>
+            <p>Faça login para acessar as turmas e avaliações.</p>
+            <input type="email" id="login-email" placeholder="Usuário de Acesso" class="input-login">
+            <input type="password" id="login-senha" placeholder="Senha" class="input-login">
+            <button id="btn-entrar" class="btn-primario" style="width: 100%; margin-top: 15px;">Entrar no Sistema</button>
+            <p id="login-erro" style="color: #dc3545; display: none; font-size: 13px; margin-top: 10px;"></p>
+        </div>
+    </div>
+
+    <header class="cabecalho">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <img src="logo.png" alt="Logo AvaliaTrilhas" style="height: 45px; border-radius: 4px;">
+            <h1 style="margin: 0;">AvaliaTrilhas</h1>
+        </div>
+        <div style="position: absolute; top: 20px; right: 20px; display: flex; align-items: center; gap: 15px;">
+            <span id="texto-usuario-logado" style="font-size: 14px; font-weight: normal; display: none;"></span>
+            <button id="btn-sair" class="btn-secundario" style="padding: 5px 10px; font-size: 12px; display: none;">Sair da Conta</button>
+        </div>
+    </header>
+
+    <nav class="menu-visoes container">
+        <button id="btn-visao-tabela" class="visao-ativa">📝 Lançar Notas</button>
+        <button id="btn-visao-graficos">📊 Relatórios de Turma</button>
+        <button id="btn-visao-logs">📜 Log de Alterações</button>
+    </nav>
+
+    <main class="container">
+        <div id="tela-tabela">
+            <section class="painel-filtros">
+                <div class="grupo-filtro"><label>Polo</label><select id="filtro-polo"><option value="">Selecione...</option></select></div>
+                <div class="grupo-filtro"><label>Turno</label><select id="filtro-turno" disabled><option value="">Polo primeiro</option></select></div>
+                <div class="grupo-filtro"><label>Turma</label><select id="filtro-turma" disabled><option value="">Turno primeiro</option></select></div>
+                <div class="grupo-filtro"><label>Disciplina</label><select id="filtro-disciplina" disabled><option value="">Turma primeiro</option></select></div>
+                <div class="grupo-filtro"><label>Mês</label><select id="filtro-mes"></select></div>
+            </section>
+
+            <section class="painel-acoes" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div style="display: flex; gap: 10px;">
+                    <button id="btn-abrir-opcoes-avancadas" class="btn-secundario" style="background-color: #6c757d; color: white; border: none; display: none;">⚙️ Opções Avançadas</button>
+                    <button id="btn-abrir-modal-alu" class="btn-secundario" disabled>⚙️ Gerenciar Estudantes</button>
+                    <button id="btn-abrir-modal-hab" class="btn-secundario" disabled>⚙️ Gerenciar Habilidades</button>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="btn-toggle-mes" class="btn-alerta" disabled>🔒 Fechar Mês</button>
+                    <button id="btn-salvar" class="btn-primario" disabled>💾 Salvar Notas</button>
+                </div>
+            </section>
+
+            <section class="area-tabela">
+                <div id="painel-legenda" class="legenda-cores" style="display: none;">
+                    <span class="item-legenda"><span class="bolinha cor-0"></span>0 - Não aplicável</span>
+                    <span class="item-legenda"><span class="bolinha cor-1"></span>1 - Não desenvolvida</span>
+                    <span class="item-legenda"><span class="bolinha cor-2"></span>2 - Em desenvolvimento</span>
+                    <span class="item-legenda"><span class="bolinha cor-3"></span>3 - Em construção</span>
+                    <span class="item-legenda"><span class="bolinha cor-4"></span>4 - Consolidada</span>
+                </div>
+                <div class="tabela-scroll">
+                    <table>
+                        <thead id="cabecalho-tabela"><tr><th>Nome do Estudante</th></tr></thead>
+                        <tbody id="corpo-tabela"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <div id="tela-graficos" style="display: none;">
+            <section class="area-dashboard">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--cor-primaria); padding-bottom: 10px; margin-bottom: 20px;">
+                    <h2 style="margin: 0; color: var(--cor-primaria);">📈 Relatórios e Evolução</h2>
+                </div>
+
+                <div class="painel-filtros" style="background-color: #f8f9fa; border: 1px solid var(--cor-borda); display: flex; flex-direction: column; gap: 20px;">
+                    
+                    <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                        <h4 style="margin-top: 0; margin-bottom: 15px; color: #0056b3;">👤 1. Sujeito da Avaliação (Quem?)</h4>
+                        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                            <select id="g-tipo-sujeito" class="input-login" style="flex: 1;">
+                                <option value="turma">Avaliar uma Turma Inteira</option>
+                                <option value="aluno">Avaliar um Educando Específico</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <select id="g-polo-1" class="input-login" style="flex: 1;"><option value="">Polo...</option></select>
+                            <select id="g-turno-1" class="input-login" style="flex: 1;" disabled><option value="">Turno...</option></select>
+                            <select id="g-turma-1" class="input-login" style="flex: 1;" disabled><option value="">Turma...</option></select>
+                        </div>
+                        <div id="g-area-aluno-1" style="display: none;">
+                            <select id="g-aluno-1" class="input-login" style="width: 100%; border-color: #0056b3;"><option value="">Selecione o Educando...</option></select>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                            <h4 style="margin-top: 0; margin-bottom: 15px; color: #333;">🎯 2. Foco e Período (O Quê e Quando?)</h4>
+                            
+                            <label style="font-size: 12px; color: #666; font-weight: bold;">Formato da Análise:</label>
+                            <select id="g-escopo" class="input-login" style="width: 100%; margin-bottom: 15px;" disabled>
+                                <option value="geral">Visão Geral (Gráfico de Teia/Radar das Disciplinas)</option>
+                                <option value="disciplina">Evolução de uma Disciplina (Gráfico de Linha)</option>
+                                <option value="habilidade">Evolução de uma Habilidade (Gráfico de Linha)</option>
+                            </select>
+
+                            <div id="g-area-disc-hab" style="display:none; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+                                <select id="g-disc" class="input-login" style="width: 100%;"><option value="">Selecione a Disciplina...</option></select>
+                                <select id="g-hab" class="input-login" style="width: 100%; display:none;"><option value="">Selecione a Habilidade...</option></select>
+                            </div>
+
+                            <label style="font-size: 12px; color: #666; font-weight: bold;">Delimitar Meses:</label>
+                            <div style="display: flex; gap: 10px;">
+                                <select id="g-mes-inicio" class="input-login" style="flex: 1;"></select>
+                                <span style="line-height: 35px;">até</span>
+                                <select id="g-mes-fim" class="input-login" style="flex: 1;"></select>
+                            </div>
+                        </div>
+
+                        <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                            <h4 style="margin-top: 0; margin-bottom: 15px; color: #d35400;">⚖️ 3. Comparação (Opcional)</h4>
+                            <select id="g-tipo-comparacao" class="input-login" style="width: 100%; margin-bottom: 15px;" disabled>
+                                <option value="nenhum">Nenhuma comparação</option>
+                                </select>
+
+                            <div id="g-area-turma-2" style="display: none; flex-direction: column; gap: 10px;">
+                                <select id="g-polo-2" class="input-login" style="width: 100%;"><option value="">Polo...</option></select>
+                                <select id="g-turno-2" class="input-login" style="width: 100%;" disabled><option value="">Turno...</option></select>
+                                <select id="g-turma-2" class="input-login" style="width: 100%; border-color: #d35400;" disabled><option value="">Turma...</option></select>
+                            </div>
+
+                            <div id="g-area-aluno-2" style="display: none;">
+                                <select id="g-aluno-2" class="input-login" style="width: 100%; border-color: #d35400;"><option value="">Selecione o Outro Educando...</option></select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="btn-gerar-grafico" class="btn-primario" style="width: 100%; margin-top: 15px; padding: 12px; font-size: 16px;" disabled>📊 Processar e Gerar Gráfico</button>
+                <div id="area-imprimir-grafico" style="display: none; text-align: right; margin-top: 15px;">
+                    <button id="btn-imprimir-grafico" class="btn-secundario" style="background-color: #28a745; color: white; border: none;">🖨️ Imprimir / Salvar PDF do Gráfico</button>
+                </div>
+                <div class="container-grafico" style="position: relative; height:450px; width:100%; display: flex; justify-content: center; align-items: center; border: 1px dashed var(--cor-borda); border-radius: 8px; margin-top: 20px; background: white; padding: 15px;">
+                    <p id="aviso-grafico" style="color: #999;">Selecione a Turma no Passo 1 para começar.</p>
+                    <canvas id="canvas-evolucao" style="display: none;"></canvas>
+                </div>
+            </section>
+        </div>
+
+        <div id="tela-logs" style="display: none;">
+            <section class="area-dashboard">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>Registro de Atividades (Auditoria)</h2>
+                    <button id="btn-atualizar-logs" class="btn-secundario">🔄 Atualizar Tabela</button>
+                </div>
+                <p style="color: #666; margin-bottom: 20px;">Exibindo as últimas 300 alterações salvas na nuvem.</p>
+                <div class="tabela-scroll">
+                    <table style="width: 100%; border-collapse: collapse; background: white;">
+                        <thead>
+                            <tr style="background-color: var(--cor-secundaria); border-bottom: 2px solid var(--cor-borda);">
+                                <th style="padding: 10px; text-align: left;">Usuário (Perfil)</th>
+                                <th style="padding: 10px; text-align: center;">Data</th>
+                                <th style="padding: 10px; text-align: center;">Horário</th>
+                                <th style="padding: 10px; text-align: left;">Contexto (Onde?)</th>
+                                <th style="padding: 10px; text-align: left;">Ação Realizada</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpo-tabela-logs">
+                            </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="modal-gerenciar-alu" class="modal-overlay">
+        <div class="modal-box">
+            <h2>⚙️ Gerenciar Estudantes</h2>
+            <div class="modal-tabs">
+                <button id="tab-alu-add" class="tab-btn ativa" onclick="mudarAbaAlu('add')">+ Adicionar</button>
+                <button id="tab-alu-copiar" class="tab-btn" onclick="mudarAbaAlu('copiar')">🔄 Copiar</button>
+                <button id="tab-alu-mover" class="tab-btn" onclick="mudarAbaAlu('mover')">➡️ Mover</button>
+                <button id="tab-alu-excluir" class="tab-btn" onclick="mudarAbaAlu('excluir')">🗑️ Excluir</button>
+            </div>
+            
+            <div id="aba-alu-add" class="tab-conteudo" style="display: block;">
+                <p>Insira um nome por linha:</p>
+                <textarea id="texto-add-alu" placeholder="Ex:\nJoão da Silva\nMaria Souza"></textarea>
+            </div>
+            
+            <div id="aba-alu-copiar" class="tab-conteudo" style="display: none;">
+                <p>Selecione os estudantes para <b>Copiar</b> (manter aqui e adicionar no destino):</p>
+                <div id="lista-checkbox-alu-copiar" class="checkbox-list"></div>
+                <div style="margin-top: 10px;">
+                    <label>Copiar para qual Turma?</label>
+                    <div style="display: flex; gap: 5px; margin-top: 5px;">
+                        <select id="dest-alu-copiar-polo" class="input-login" style="flex: 1;"><option value="">Polo...</option><option value="polo1">Polo 1</option><option value="polo2">Polo 2</option></select>
+                        <select id="dest-alu-copiar-turno" class="input-login" style="flex: 1;" disabled><option value="">Turno...</option></select>
+                        <select id="dest-alu-copiar-turma" class="input-login" style="flex: 1;" disabled><option value="">Turma...</option></select>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="aba-alu-mover" class="tab-conteudo" style="display: none;">
+                <p>Selecione os estudantes para <b>Mover</b> (retirar daqui e transferir ao destino):</p>
+                <div id="lista-checkbox-alu-mover" class="checkbox-list"></div>
+                <div style="margin-top: 10px;">
+                    <label>Mover para qual Turma?</label>
+                    <div style="display: flex; gap: 5px; margin-top: 5px;">
+                        <select id="dest-alu-mover-polo" class="input-login" style="flex: 1;"><option value="">Polo...</option><option value="polo1">Polo 1</option><option value="polo2">Polo 2</option></select>
+                        <select id="dest-alu-mover-turno" class="input-login" style="flex: 1;" disabled><option value="">Turno...</option></select>
+                        <select id="dest-alu-mover-turma" class="input-login" style="flex: 1;" disabled><option value="">Turma...</option></select>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="aba-alu-excluir" class="tab-conteudo" style="display: none;">
+                <p>⚠️ Excluir definitivamente (o histórico de notas será perdido):</p>
+                <div id="lista-checkbox-alu-excluir" class="checkbox-list" style="border-color: #dc3545;"></div>
+            </div>
+            
+            <div class="modal-acoes" style="margin-top: 20px;">
+                <button id="btn-modal-alu-cancelar" class="btn-secundario">Cancelar</button>
+                <button id="btn-modal-alu-confirmar" class="btn-primario">Executar Ação</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-gerenciar-hab" class="modal-overlay">
+        <div class="modal-box">
+            <h2>⚙️ Gerenciar Habilidades</h2>
+            <div class="modal-tabs">
+                <button id="tab-hab-add" class="tab-btn ativa" onclick="mudarAbaHab('add')">+ Adicionar</button>
+                <button id="tab-hab-copiar" class="tab-btn" onclick="mudarAbaHab('copiar')">🔄 Copiar</button>
+                <button id="tab-hab-excluir" class="tab-btn" onclick="mudarAbaHab('excluir')">🗑️ Excluir</button>
+            </div>
+            <div id="aba-hab-add" class="tab-conteudo" style="display: block;">
+                <p>Insira uma habilidade por linha:</p>
+                <textarea id="texto-add-hab" placeholder="Ex:\nCompreender textos simples."></textarea>
+            </div>
+            <div id="aba-hab-copiar" class="tab-conteudo" style="display: none;">
+                <p>Selecione as habilidades para copiar:</p>
+                <div id="lista-checkbox-habs-copiar" class="checkbox-list"></div>
+                <label>Copiar para qual Destino?</label>
+                <select id="dest-hab-polo"><option value="">Polo...</option><option value="polo1">Polo 1</option><option value="polo2">Polo 2</option></select>
+                <select id="dest-hab-turno" disabled><option value="">Turno...</option></select>
+                <select id="dest-hab-turma" disabled><option value="">Turma...</option></select>
+                <select id="dest-hab-disciplina" disabled><option value="">Disciplina...</option></select>
+            </div>
+            <div id="aba-hab-excluir" class="tab-conteudo" style="display: none;">
+                <p>⚠️ Excluir definitivamente (histórico de notas será perdido):</p>
+                <div id="lista-checkbox-habs-excluir" class="checkbox-list" style="border-color: #dc3545;"></div>
+            </div>
+            <div class="modal-acoes" style="margin-top: 20px;">
+                <button id="btn-modal-hab-cancelar" class="btn-secundario">Cancelar</button>
+                <button id="btn-modal-hab-confirmar" class="btn-primario">Executar Ação</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-anotacoes-aluno" class="modal-overlay">
+        <div class="modal-box" style="max-width: 800px;">
+            <h2 id="titulo-modal-anotacoes">📝 Anotações do Estudante</h2>
+            <div id="lista-anotacoes-container" class="lista-anotacoes"></div>
+            <div style="margin-top: 10px;">
+                <label style="font-size: 12px; font-weight: bold;">Nova Anotação (Lembre-se de salvar as notas na tabela depois!):</label>
+                <textarea id="texto-nova-anotacao" placeholder="Registre aqui o que aconteceu com o estudante na aula hoje..." style="width: 100%; height: 80px; margin-top: 5px; padding: 10px; border: 1px solid var(--cor-borda); border-radius: 4px;"></textarea>
+            </div>
+            <div class="modal-acoes" style="margin-top: 20px;">
+                <button id="btn-fechar-anotacoes" class="btn-secundario">Fechar Caderno</button>
+                <button id="btn-salvar-anotacao" class="btn-primario">Gravar Anotação</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-opcoes-avancadas" class="modal-overlay">
+        <div class="modal-box" style="max-width: 500px;">
+            <h2>⚙️ Opções Avançadas</h2>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ddd;">
+                <h3 style="margin-top: 0; font-size: 16px;">📥 1º Passo: Baixar Backup</h3>
+                <p style="font-size: 13px; color: #555;">Você deve salvar uma cópia atual no seu computador antes de poder apagar ou restaurar qualquer coisa.</p>
+                <button id="btn-executar-backup" class="btn-primario" style="background-color: #28a745; border: none;">Fazer Download do Banco</button>
+            </div>
+            <div id="area-restrita-avancada" style="display: none; border-top: 2px dashed #dc3545; padding-top: 15px;">
+                <div style="background: #fff3cd; padding: 10px; border-radius: 4px; border: 1px solid #ffeeba; margin-bottom: 15px;">
+                    <p style="margin: 0; font-size: 12px; color: #856404; font-weight: bold;">⚠️ ATENÇÃO EXTREMA: Em caso de dúvidas, comunique a orientação pedagógica antes de prosseguir.</p>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <h3 style="font-size: 15px;">Ação Desejada:</h3>
+                    <select id="seletor-acao-avancada" class="input-login" style="margin-bottom: 10px;">
+                        <option value="">Selecione...</option>
+                        <option value="upload">Subir Backup Anterior (Restaurar Nuvem)</option>
+                        <option value="reset">Deletar Todos os Dados (Zerar Ano Letivo)</option>
+                    </select>
+                    <div id="area-upload-file" style="display: none; margin-bottom: 10px;">
+                        <input type="file" id="input-arquivo-backup" accept=".json" class="input-login" style="padding: 5px;">
+                    </div>
+                </div>
+                <div style="background: #fff; padding: 15px; border: 1px solid var(--cor-borda); border-radius: 8px;">
+                    <h3 style="margin-top: 0; font-size: 14px; color: #dc3545;">Autenticação de Segurança</h3>
+                    <input type="email" id="avancado-email" placeholder="E-mail do professor" class="input-login">
+                    <input type="password" id="avancado-senha" placeholder="Senha" class="input-login">
+                    <input type="text" id="avancado-palavra" placeholder="Digite CONFIRMAR" class="input-login" style="border-color: #dc3545; border-width: 2px;">
+                    <button id="btn-confirmar-acao-avancada" class="btn-alerta" style="width: 100%; margin-top: 10px;" disabled>Executar Ação</button>
+                </div>
+            </div>
+            <div class="modal-acoes" style="margin-top: 20px;">
+                <button id="btn-fechar-opcoes" class="btn-secundario" style="width: 100%;">Fechar Janela</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-alerta-salvar" class="modal-overlay" style="z-index: 999999;">
+        <div class="modal-box" style="text-align: center; max-width: 400px;">
+            <h2 style="color: #dc3545;">⚠️ Alterações Não Salvas!</h2>
+            <p>Deseja sair e perder as alterações não salvas, ou prefere salvar primeiro na nuvem?</p>
+            <div class="modal-acoes" style="justify-content: center; margin-top: 20px;">
+                <button id="btn-alerta-descartar" class="btn-secundario" style="color: #dc3545; border-color: #dc3545;">Sair sem Salvar</button>
+                <button id="btn-alerta-salvar" class="btn-primario">Salvar Agora</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sys-modal-overlay" class="modal-overlay" style="display: none; z-index: 999999;">
+        <div class="modal-box" style="max-width: 400px; text-align: center;">
+            <h3 id="sys-modal-title" style="margin-top: 0;">Aviso</h3>
+            <p id="sys-modal-msg" style="margin-bottom: 20px; color: #555;"></p>
+            <input type="text" id="sys-modal-input" class="input-login" style="display: none; margin-bottom: 20px;">
+            <div class="modal-acoes" style="justify-content: center;">
+                <button id="sys-modal-btn-cancel" class="btn-secundario" style="display: none;">Cancelar</button>
+                <button id="sys-modal-btn-ok" class="btn-primario">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-dossie-aluno" class="modal-overlay" style="z-index: 100000;">
+        <div class="modal-box" style="max-width: 1200px; width: 90%; max-height: 90vh; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--cor-primaria); padding-bottom: 10px; margin-bottom: 15px;">
+                <h2 id="titulo-dossie" style="margin: 0; color: var(--cor-primaria);">Ficha do Estudante</h2>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="btn-secundario no-print" onclick="imprimirDossie()" style="background-color: #28a745; color: white; border: none; margin: 0; display: inline-flex; align-items: center; justify-content: center; height: 35px; line-height: 35px; vertical-align: middle;">🖨️ Imprimir Ficha</button>
+                    
+                    <button id="btn-ia-ficha" class="btn-ia no-print" style="margin: 0; padding: 0 15px; border-radius: 4px; font-weight: bold; border: 1px solid #0056b3; background-color: #e6f2ff; color: #0056b3; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; height: 35px; line-height: 35px; vertical-align: middle; width: auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">🤖 Prompt IA</button>
+                    
+                    <button class="btn-alerta no-print" onclick="document.getElementById('modal-dossie-aluno').style.display='none'" style="margin: 0; display: inline-flex; align-items: center; justify-content: center; height: 35px; line-height: 35px; vertical-align: middle;">❌ Fechar</button>
+                </div>
+            </div>
+            
+            <div id="conteudo-dossie" style="overflow-y: auto; padding-right: 10px; flex-grow: 1;">
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="graficos.js"></script>
+    <script src="logs.js"></script>
+</body>
+</html>
