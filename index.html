@@ -9,7 +9,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -32,6 +31,21 @@
         </div>
         <div style="position: absolute; top: 20px; right: 20px; display: flex; align-items: center; gap: 15px;">
             <span id="texto-usuario-logado" style="font-size: 14px; font-weight: normal; display: none;"></span>
+            
+            <div id="btn-caderno-prof" onclick="abrirMeuCaderno()" style="display: none; cursor: pointer; font-size: 22px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2)); transition: transform 0.2s;" title="Meu Caderno Pessoal" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">📓</div>
+
+            <div id="container-sino" style="position: relative; display: none; cursor: pointer;">
+                <span style="font-size: 22px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2)); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">🔔</span>
+                <span id="badge-sino" class="badge-notificacao" style="display: none;">0</span>
+                
+                <div id="dropdown-notificacoes" class="notificacoes-dropdown" style="display: none;">
+                    <div style="padding: 12px; border-bottom: 1px solid #eee; font-weight: bold; background: #f8f9fa; color: #333; font-size: 14px;">Suas Notificações</div>
+                    <div id="lista-notificacoes" style="max-height: 320px; overflow-y: auto;">
+                        <div style="padding: 15px; text-align: center; color: #999; font-size: 13px;">Nenhuma notificação nova</div>
+                    </div>
+                </div>
+            </div>
+
             <button id="btn-sair" class="btn-secundario" style="padding: 5px 10px; font-size: 12px; display: none;">Sair da Conta</button>
         </div>
     </header>
@@ -39,7 +53,7 @@
     <nav class="menu-visoes container">
         <button id="btn-visao-tabela" class="visao-ativa">📝 Lançar Notas</button>
         <button id="btn-visao-graficos">📊 Relatórios de Turma</button>
-        <button id="btn-visao-logs">📜 Log de Alterações</button>
+        <button id="btn-visao-logs">📜 Log de Atividades</button>
     </nav>
 
     <main class="container">
@@ -86,11 +100,9 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--cor-primaria); padding-bottom: 10px; margin-bottom: 20px;">
                     <h2 style="margin: 0; color: var(--cor-primaria);">📈 Relatórios e Evolução</h2>
                 </div>
-
                 <div class="painel-filtros" style="background-color: #f8f9fa; border: 1px solid var(--cor-borda); display: flex; flex-direction: column; gap: 20px;">
-                    
                     <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
-                        <h4 style="margin-top: 0; margin-bottom: 15px; color: #0056b3;">👤 1. Sujeito da Avaliação (Quem?)</h4>
+                        <h4 style="margin-top: 0; margin-bottom: 15px; color: #0056b3;">👤 1. Sujeito da Avaliação</h4>
                         <div style="display: flex; gap: 15px; margin-bottom: 15px;">
                             <select id="g-tipo-sujeito" class="input-login" style="flex: 1;">
                                 <option value="turma">Avaliar uma Turma Inteira</option>
@@ -109,50 +121,40 @@
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
-                            <h4 style="margin-top: 0; margin-bottom: 15px; color: #333;">🎯 2. Foco e Período (O Quê e Quando?)</h4>
-                            
-                            <label style="font-size: 12px; color: #666; font-weight: bold;">Formato da Análise:</label>
+                            <h4 style="margin-top: 0; margin-bottom: 15px; color: #333;">🎯 2. Foco e Período</h4>
+                            <label style="font-size: 12px; font-weight: bold;">Formato da Análise:</label>
                             <select id="g-escopo" class="input-login" style="width: 100%; margin-bottom: 15px;" disabled>
-                                <option value="geral">Visão Geral (Gráfico de Teia/Radar das Disciplinas)</option>
-                                <option value="disciplina">Evolução de uma Disciplina (Gráfico de Linha)</option>
-                                <option value="habilidade">Evolução de uma Habilidade (Gráfico de Linha)</option>
+                                <option value="geral">Visão Geral (Gráfico de Teia)</option>
+                                <option value="disciplina">Evolução de uma Disciplina (Linha)</option>
+                                <option value="habilidade">Evolução de uma Habilidade (Linha)</option>
                             </select>
-
                             <div id="g-area-disc-hab" style="display:none; flex-direction: column; gap: 10px; margin-bottom: 15px;">
                                 <select id="g-disc" class="input-login" style="width: 100%;"><option value="">Selecione a Disciplina...</option></select>
                                 <select id="g-hab" class="input-login" style="width: 100%; display:none;"><option value="">Selecione a Habilidade...</option></select>
                             </div>
-
-                            <label style="font-size: 12px; color: #666; font-weight: bold;">Delimitar Meses:</label>
+                            <label style="font-size: 12px; font-weight: bold;">Delimitar Meses:</label>
                             <div style="display: flex; gap: 10px;">
-                                <select id="g-mes-inicio" class="input-login" style="flex: 1;"></select>
-                                <span style="line-height: 35px;">até</span>
-                                <select id="g-mes-fim" class="input-login" style="flex: 1;"></select>
+                                <select id="g-mes-inicio" class="input-login" style="flex: 1;"></select><span style="line-height: 35px;">até</span><select id="g-mes-fim" class="input-login" style="flex: 1;"></select>
                             </div>
                         </div>
 
                         <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
                             <h4 style="margin-top: 0; margin-bottom: 15px; color: #d35400;">⚖️ 3. Comparação (Opcional)</h4>
-                            <select id="g-tipo-comparacao" class="input-login" style="width: 100%; margin-bottom: 15px;" disabled>
-                                <option value="nenhum">Nenhuma comparação</option>
-                                </select>
-
+                            <select id="g-tipo-comparacao" class="input-login" style="width: 100%; margin-bottom: 15px;" disabled><option value="nenhum">Nenhuma comparação</option></select>
                             <div id="g-area-turma-2" style="display: none; flex-direction: column; gap: 10px;">
                                 <select id="g-polo-2" class="input-login" style="width: 100%;"><option value="">Polo...</option></select>
                                 <select id="g-turno-2" class="input-login" style="width: 100%;" disabled><option value="">Turno...</option></select>
                                 <select id="g-turma-2" class="input-login" style="width: 100%; border-color: #d35400;" disabled><option value="">Turma...</option></select>
                             </div>
-
                             <div id="g-area-aluno-2" style="display: none;">
                                 <select id="g-aluno-2" class="input-login" style="width: 100%; border-color: #d35400;"><option value="">Selecione o Outro Educando...</option></select>
                             </div>
                         </div>
                     </div>
                 </div>
-
                 <button id="btn-gerar-grafico" class="btn-primario" style="width: 100%; margin-top: 15px; padding: 12px; font-size: 16px;" disabled>📊 Processar e Gerar Gráfico</button>
                 <div id="area-imprimir-grafico" style="display: none; text-align: right; margin-top: 15px;">
-                    <button id="btn-imprimir-grafico" class="btn-secundario" style="background-color: #28a745; color: white; border: none;">🖨️ Imprimir / Salvar PDF do Gráfico</button>
+                    <button id="btn-imprimir-grafico" class="btn-secundario" style="background-color: #28a745; color: white; border: none;">🖨️ Imprimir Gráfico</button>
                 </div>
                 <div class="container-grafico" style="position: relative; height:450px; width:100%; display: flex; justify-content: center; align-items: center; border: 1px dashed var(--cor-borda); border-radius: 8px; margin-top: 20px; background: white; padding: 15px;">
                     <p id="aviso-grafico" style="color: #999;">Selecione a Turma no Passo 1 para começar.</p>
@@ -163,24 +165,48 @@
 
         <div id="tela-logs" style="display: none;">
             <section class="area-dashboard">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h2>Registro de Atividades (Auditoria)</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--cor-primaria); padding-bottom: 10px; margin-bottom: 20px;">
+                    <h2 style="margin: 0; color: var(--cor-primaria);">📜 Registro de Atividades (Auditoria)</h2>
                     <button id="btn-atualizar-logs" class="btn-secundario">🔄 Atualizar Tabela</button>
                 </div>
-                <p style="color: #666; margin-bottom: 20px;">Exibindo as últimas 300 alterações salvas na nuvem.</p>
+                
+                <div class="painel-filtros" style="background-color: #f8f9fa; border: 1px solid var(--cor-borda); margin-bottom: 20px;">
+                    <div class="grupo-filtro" style="flex: 2;">
+                        <label>Período (De / Até):</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="date" id="log-filtro-data-inicio" title="Data Inicial" class="input-login" style="margin-bottom:0; padding:10px; flex: 1;">
+                            <span style="font-size: 12px; color: #666; font-weight: bold;">até</span>
+                            <input type="date" id="log-filtro-data-fim" title="Data Final" class="input-login" style="margin-bottom:0; padding:10px; flex: 1;">
+                        </div>
+                    </div>
+                    <div class="grupo-filtro" style="flex: 1.5;">
+                        <label>Tipo de Alteração:</label>
+                        <select id="log-filtro-tipo" class="input-login" style="margin-bottom:0; padding:10px;">
+                            <option value="">Todas as Atividades</option>
+                            <option value="sistema">Geral (Notas, Turmas, Lançamentos)</option>
+                            <option value="ocorrencia">⚠️ Apenas Ocorrências</option>
+                            <option value="nao-lidas">🔴 Ocorrências Não Lidas</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: flex-end; gap: 10px;">
+                        <button id="btn-aplicar-filtros-logs" class="btn-primario" style="height: 42px;">🔍 Filtrar</button>
+                        <button id="btn-limpar-filtros-logs" class="btn-secundario" style="height: 42px;">Limpar</button>
+                    </div>
+                </div>
+
+                <p style="color: #666; margin-bottom: 10px; font-size: 13px;" id="texto-resumo-logs">Exibindo os últimos 300 registros.</p>
+                
                 <div class="tabela-scroll">
                     <table style="width: 100%; border-collapse: collapse; background: white;">
                         <thead>
                             <tr style="background-color: var(--cor-secundaria); border-bottom: 2px solid var(--cor-borda);">
-                                <th style="padding: 10px; text-align: left;">Usuário (Perfil)</th>
-                                <th style="padding: 10px; text-align: center;">Data</th>
-                                <th style="padding: 10px; text-align: center;">Horário</th>
+                                <th style="padding: 10px; text-align: left;">Usuário</th>
+                                <th style="padding: 10px; text-align: center;">Data / Hora</th>
                                 <th style="padding: 10px; text-align: left;">Contexto (Onde?)</th>
-                                <th style="padding: 10px; text-align: left;">Ação Realizada</th>
+                                <th style="padding: 10px; text-align: left;">Ação Realizada / Detalhes</th>
                             </tr>
                         </thead>
-                        <tbody id="corpo-tabela-logs">
-                            </tbody>
+                        <tbody id="corpo-tabela-logs"></tbody>
                     </table>
                 </div>
             </section>
@@ -196,46 +222,24 @@
                 <button id="tab-alu-mover" class="tab-btn" onclick="mudarAbaAlu('mover')">➡️ Mover</button>
                 <button id="tab-alu-excluir" class="tab-btn" onclick="mudarAbaAlu('excluir')">🗑️ Excluir</button>
             </div>
-            
             <div id="aba-alu-add" class="tab-conteudo" style="display: block;">
                 <p>Insira um nome por linha:</p>
-                <textarea id="texto-add-alu" placeholder="Ex:\nJoão da Silva\nMaria Souza"></textarea>
+                <textarea id="texto-add-alu"></textarea>
             </div>
-            
             <div id="aba-alu-copiar" class="tab-conteudo" style="display: none;">
-                <p>Selecione os estudantes para <b>Copiar</b> (manter aqui e adicionar no destino):</p>
                 <div id="lista-checkbox-alu-copiar" class="checkbox-list"></div>
-                <div style="margin-top: 10px;">
-                    <label>Copiar para qual Turma?</label>
-                    <div style="display: flex; gap: 5px; margin-top: 5px;">
-                        <select id="dest-alu-copiar-polo" class="input-login" style="flex: 1;"><option value="">Polo...</option><option value="polo1">Polo 1</option><option value="polo2">Polo 2</option></select>
-                        <select id="dest-alu-copiar-turno" class="input-login" style="flex: 1;" disabled><option value="">Turno...</option></select>
-                        <select id="dest-alu-copiar-turma" class="input-login" style="flex: 1;" disabled><option value="">Turma...</option></select>
-                    </div>
-                </div>
+                <div style="display: flex; gap: 5px;"><select id="dest-alu-copiar-polo" class="input-login" style="flex: 1;"><option value="">Polo...</option></select><select id="dest-alu-copiar-turno" class="input-login" style="flex: 1;" disabled><option value="">Turno...</option></select><select id="dest-alu-copiar-turma" class="input-login" style="flex: 1;" disabled><option value="">Turma...</option></select></div>
             </div>
-            
             <div id="aba-alu-mover" class="tab-conteudo" style="display: none;">
-                <p>Selecione os estudantes para <b>Mover</b> (retirar daqui e transferir ao destino):</p>
                 <div id="lista-checkbox-alu-mover" class="checkbox-list"></div>
-                <div style="margin-top: 10px;">
-                    <label>Mover para qual Turma?</label>
-                    <div style="display: flex; gap: 5px; margin-top: 5px;">
-                        <select id="dest-alu-mover-polo" class="input-login" style="flex: 1;"><option value="">Polo...</option><option value="polo1">Polo 1</option><option value="polo2">Polo 2</option></select>
-                        <select id="dest-alu-mover-turno" class="input-login" style="flex: 1;" disabled><option value="">Turno...</option></select>
-                        <select id="dest-alu-mover-turma" class="input-login" style="flex: 1;" disabled><option value="">Turma...</option></select>
-                    </div>
-                </div>
+                <div style="display: flex; gap: 5px;"><select id="dest-alu-mover-polo" class="input-login" style="flex: 1;"><option value="">Polo...</option></select><select id="dest-alu-mover-turno" class="input-login" style="flex: 1;" disabled><option value="">Turno...</option></select><select id="dest-alu-mover-turma" class="input-login" style="flex: 1;" disabled><option value="">Turma...</option></select></div>
             </div>
-            
             <div id="aba-alu-excluir" class="tab-conteudo" style="display: none;">
-                <p>⚠️ Excluir definitivamente (o histórico de notas será perdido):</p>
                 <div id="lista-checkbox-alu-excluir" class="checkbox-list" style="border-color: #dc3545;"></div>
             </div>
-            
             <div class="modal-acoes" style="margin-top: 20px;">
                 <button id="btn-modal-alu-cancelar" class="btn-secundario">Cancelar</button>
-                <button id="btn-modal-alu-confirmar" class="btn-primario">Executar Ação</button>
+                <button id="btn-modal-alu-confirmar" class="btn-primario">Executar</button>
             </div>
         </div>
     </div>
@@ -249,40 +253,62 @@
                 <button id="tab-hab-excluir" class="tab-btn" onclick="mudarAbaHab('excluir')">🗑️ Excluir</button>
             </div>
             <div id="aba-hab-add" class="tab-conteudo" style="display: block;">
-                <p>Insira uma habilidade por linha:</p>
-                <textarea id="texto-add-hab" placeholder="Ex:\nCompreender textos simples."></textarea>
+                <textarea id="texto-add-hab"></textarea>
             </div>
             <div id="aba-hab-copiar" class="tab-conteudo" style="display: none;">
-                <p>Selecione as habilidades para copiar:</p>
                 <div id="lista-checkbox-habs-copiar" class="checkbox-list"></div>
-                <label>Copiar para qual Destino?</label>
-                <select id="dest-hab-polo"><option value="">Polo...</option><option value="polo1">Polo 1</option><option value="polo2">Polo 2</option></select>
-                <select id="dest-hab-turno" disabled><option value="">Turno...</option></select>
-                <select id="dest-hab-turma" disabled><option value="">Turma...</option></select>
-                <select id="dest-hab-disciplina" disabled><option value="">Disciplina...</option></select>
+                <select id="dest-hab-polo"><option value="">Polo...</option></select><select id="dest-hab-turno" disabled><option value="">Turno...</option></select><select id="dest-hab-turma" disabled><option value="">Turma...</option></select><select id="dest-hab-disciplina" disabled><option value="">Disciplina...</option></select>
             </div>
             <div id="aba-hab-excluir" class="tab-conteudo" style="display: none;">
-                <p>⚠️ Excluir definitivamente (histórico de notas será perdido):</p>
                 <div id="lista-checkbox-habs-excluir" class="checkbox-list" style="border-color: #dc3545;"></div>
             </div>
             <div class="modal-acoes" style="margin-top: 20px;">
                 <button id="btn-modal-hab-cancelar" class="btn-secundario">Cancelar</button>
-                <button id="btn-modal-hab-confirmar" class="btn-primario">Executar Ação</button>
+                <button id="btn-modal-hab-confirmar" class="btn-primario">Executar</button>
             </div>
         </div>
     </div>
 
     <div id="modal-anotacoes-aluno" class="modal-overlay">
         <div class="modal-box" style="max-width: 800px;">
-            <h2 id="titulo-modal-anotacoes">📝 Anotações do Estudante</h2>
+            <h2 id="titulo-modal-anotacoes" style="margin-top: 0;">📝 Anotações do Estudante</h2>
             <div id="lista-anotacoes-container" class="lista-anotacoes"></div>
-            <div style="margin-top: 10px;">
-                <label style="font-size: 12px; font-weight: bold;">Nova Anotação (Lembre-se de salvar as notas na tabela depois!):</label>
-                <textarea id="texto-nova-anotacao" placeholder="Registre aqui o que aconteceu com o estudante na aula hoje..." style="width: 100%; height: 80px; margin-top: 5px; padding: 10px; border: 1px solid var(--cor-borda); border-radius: 4px;"></textarea>
+            
+            <div style="margin-top: 15px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                <h4 style="margin-top: 0; margin-bottom: 15px; color: var(--cor-primaria);">Adicionar Novo Registro</h4>
+                <label style="font-size: 12px; font-weight: bold;">Tipo de Registro:</label>
+                <select id="tipo-nova-anotacao" class="input-login" style="margin-bottom: 10px; padding: 8px;">
+                    <option value="Anotação">📝 Anotação Pedagógica (Rotina)</option>
+                    <option value="Ocorrência">⚠️ Ocorrência Disciplinar</option>
+                </select>
+                <label style="font-size: 12px; font-weight: bold;">Descrição do evento:</label>
+                <textarea id="texto-nova-anotacao" placeholder="Registre aqui o que aconteceu com o estudante..." style="width: 100%; height: 80px; margin-top: 5px; padding: 10px; border: 1px solid var(--cor-borda); border-radius: 4px; resize: vertical;"></textarea>
             </div>
+            
             <div class="modal-acoes" style="margin-top: 20px;">
                 <button id="btn-fechar-anotacoes" class="btn-secundario">Fechar Caderno</button>
-                <button id="btn-salvar-anotacao" class="btn-primario">Gravar Anotação</button>
+                <button id="btn-salvar-anotacao" class="btn-primario">Gravar Registro</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-editar-anotacao" class="modal-overlay" style="z-index: 100001;">
+        <div class="modal-box" style="max-width: 600px;">
+            <h2 style="margin-top: 0; color: #d35400;">✏️ Editar Registro</h2>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <div style="flex: 1;"><label style="font-size: 12px; font-weight: bold;">Data:</label><input type="text" id="edit-anotacao-data" class="input-login" style="padding: 8px; margin-bottom: 0;"></div>
+                <div style="flex: 1;"><label style="font-size: 12px; font-weight: bold;">Disciplina:</label><select id="edit-anotacao-disciplina" class="input-login" style="padding: 8px; margin-bottom: 0;"></select></div>
+            </div>
+            <label style="font-size: 12px; font-weight: bold;">Tipo:</label>
+            <select id="edit-anotacao-tipo" class="input-login" style="margin-bottom: 10px; padding: 8px;">
+                <option value="Anotação">📝 Anotação Pedagógica (Rotina)</option>
+                <option value="Ocorrência">⚠️ Ocorrência Disciplinar</option>
+            </select>
+            <label style="font-size: 12px; font-weight: bold;">Descrição:</label>
+            <textarea id="edit-anotacao-texto" class="input-login" style="height: 120px; resize: vertical; margin-bottom: 15px;"></textarea>
+            <div class="modal-acoes">
+                <button id="btn-cancelar-edicao-anotacao" class="btn-secundario">Cancelar</button>
+                <button id="btn-salvar-edicao-anotacao" class="btn-primario" style="background-color: #d35400;">Salvar Alterações</button>
             </div>
         </div>
     </div>
@@ -291,43 +317,24 @@
         <div class="modal-box" style="max-width: 500px;">
             <h2>⚙️ Opções Avançadas</h2>
             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ddd;">
-                <h3 style="margin-top: 0; font-size: 16px;">📥 1º Passo: Baixar Backup</h3>
-                <p style="font-size: 13px; color: #555;">Você deve salvar uma cópia atual no seu computador antes de poder apagar ou restaurar qualquer coisa.</p>
+                <h3 style="margin-top: 0; font-size: 16px;">📥 Baixar Backup</h3>
                 <button id="btn-executar-backup" class="btn-primario" style="background-color: #28a745; border: none;">Fazer Download do Banco</button>
             </div>
             <div id="area-restrita-avancada" style="display: none; border-top: 2px dashed #dc3545; padding-top: 15px;">
-                <div style="background: #fff3cd; padding: 10px; border-radius: 4px; border: 1px solid #ffeeba; margin-bottom: 15px;">
-                    <p style="margin: 0; font-size: 12px; color: #856404; font-weight: bold;">⚠️ ATENÇÃO EXTREMA: Em caso de dúvidas, comunique a orientação pedagógica antes de prosseguir.</p>
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <h3 style="font-size: 15px;">Ação Desejada:</h3>
-                    <select id="seletor-acao-avancada" class="input-login" style="margin-bottom: 10px;">
-                        <option value="">Selecione...</option>
-                        <option value="upload">Subir Backup Anterior (Restaurar Nuvem)</option>
-                        <option value="reset">Deletar Todos os Dados (Zerar Ano Letivo)</option>
-                    </select>
-                    <div id="area-upload-file" style="display: none; margin-bottom: 10px;">
-                        <input type="file" id="input-arquivo-backup" accept=".json" class="input-login" style="padding: 5px;">
-                    </div>
-                </div>
-                <div style="background: #fff; padding: 15px; border: 1px solid var(--cor-borda); border-radius: 8px;">
-                    <h3 style="margin-top: 0; font-size: 14px; color: #dc3545;">Autenticação de Segurança</h3>
-                    <input type="email" id="avancado-email" placeholder="E-mail do professor" class="input-login">
-                    <input type="password" id="avancado-senha" placeholder="Senha" class="input-login">
-                    <input type="text" id="avancado-palavra" placeholder="Digite CONFIRMAR" class="input-login" style="border-color: #dc3545; border-width: 2px;">
-                    <button id="btn-confirmar-acao-avancada" class="btn-alerta" style="width: 100%; margin-top: 10px;" disabled>Executar Ação</button>
-                </div>
+                <select id="seletor-acao-avancada" class="input-login" style="margin-bottom: 10px;"><option value="">Selecione...</option><option value="upload">Restaurar Nuvem</option><option value="reset">Zerar Ano Letivo</option></select>
+                <div id="area-upload-file" style="display: none; margin-bottom: 10px;"><input type="file" id="input-arquivo-backup" accept=".json" class="input-login" style="padding: 5px;"></div>
+                <input type="email" id="avancado-email" placeholder="E-mail" class="input-login">
+                <input type="password" id="avancado-senha" placeholder="Senha" class="input-login">
+                <input type="text" id="avancado-palavra" placeholder="Digite CONFIRMAR" class="input-login" style="border-color: #dc3545; border-width: 2px;">
+                <button id="btn-confirmar-acao-avancada" class="btn-alerta" style="width: 100%; margin-top: 10px;" disabled>Executar Ação</button>
             </div>
-            <div class="modal-acoes" style="margin-top: 20px;">
-                <button id="btn-fechar-opcoes" class="btn-secundario" style="width: 100%;">Fechar Janela</button>
-            </div>
+            <div class="modal-acoes" style="margin-top: 20px;"><button id="btn-fechar-opcoes" class="btn-secundario" style="width: 100%;">Fechar</button></div>
         </div>
     </div>
 
     <div id="modal-alerta-salvar" class="modal-overlay" style="z-index: 999999;">
         <div class="modal-box" style="text-align: center; max-width: 400px;">
             <h2 style="color: #dc3545;">⚠️ Alterações Não Salvas!</h2>
-            <p>Deseja sair e perder as alterações não salvas, ou prefere salvar primeiro na nuvem?</p>
             <div class="modal-acoes" style="justify-content: center; margin-top: 20px;">
                 <button id="btn-alerta-descartar" class="btn-secundario" style="color: #dc3545; border-color: #dc3545;">Sair sem Salvar</button>
                 <button id="btn-alerta-salvar" class="btn-primario">Salvar Agora</button>
@@ -336,10 +343,11 @@
     </div>
 
     <div id="sys-modal-overlay" class="modal-overlay" style="display: none; z-index: 999999;">
-        <div class="modal-box" style="max-width: 400px; text-align: center;">
+        <div class="modal-box" style="max-width: 500px; text-align: center;">
             <h3 id="sys-modal-title" style="margin-top: 0;">Aviso</h3>
             <p id="sys-modal-msg" style="margin-bottom: 20px; color: #555;"></p>
             <input type="text" id="sys-modal-input" class="input-login" style="display: none; margin-bottom: 20px;">
+            <textarea id="sys-modal-textarea" class="input-login" style="display: none; margin-bottom: 20px; height: 120px; resize: vertical; text-align: left;"></textarea>
             <div class="modal-acoes" style="justify-content: center;">
                 <button id="sys-modal-btn-cancel" class="btn-secundario" style="display: none;">Cancelar</button>
                 <button id="sys-modal-btn-ok" class="btn-primario">OK</button>
@@ -353,14 +361,79 @@
                 <h2 id="titulo-dossie" style="margin: 0; color: var(--cor-primaria);">Ficha do Estudante</h2>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <button class="btn-secundario no-print" onclick="imprimirDossie()" style="background-color: #28a745; color: white; border: none; margin: 0; display: inline-flex; align-items: center; justify-content: center; height: 35px; line-height: 35px; vertical-align: middle;">🖨️ Imprimir Ficha</button>
-                    
                     <button id="btn-ia-ficha" class="btn-ia no-print" style="margin: 0; padding: 0 15px; border-radius: 4px; font-weight: bold; border: 1px solid #0056b3; background-color: #e6f2ff; color: #0056b3; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; height: 35px; line-height: 35px; vertical-align: middle; width: auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">🤖 Prompt IA</button>
-                    
                     <button class="btn-alerta no-print" onclick="document.getElementById('modal-dossie-aluno').style.display='none'" style="margin: 0; display: inline-flex; align-items: center; justify-content: center; height: 35px; line-height: 35px; vertical-align: middle;">❌ Fechar</button>
                 </div>
             </div>
+            <div id="conteudo-dossie" style="overflow-y: auto; padding-right: 10px; flex-grow: 1;"></div>
+        </div>
+    </div>
+
+    <div id="modal-ler-ocorrencia" class="modal-overlay" style="z-index: 100005;">
+        <div class="modal-box" style="max-width: 500px;">
+            <h2 style="color: #dc3545; margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px;">⚠️ Ocorrência Disciplinar</h2>
+            <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 13px; color: #555;">
+                <span><b>Estudante:</b> <span id="log-ocor-aluno" style="color: #333;"></span></span>
+                <span><b>Data:</b> <span id="log-ocor-data" style="color: #333;"></span></span>
+            </div>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 4px; border: 1px solid #ddd; margin: 15px 0; white-space: pre-wrap; font-size: 14px; color: #333;" id="log-ocor-texto"></div>
+            <div class="modal-acoes">
+                <button class="btn-secundario" onclick="document.getElementById('modal-ler-ocorrencia').style.display='none'">Fechar Aba</button>
+                <button id="btn-marcar-lida" class="btn-primario" style="background-color: #28a745; border: none;">✔️ Marcar como Ciente/Lida</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-caderno-prof" class="modal-overlay" style="z-index: 100002;">
+        <div class="modal-box" style="max-width: 800px; width: 95%; display: flex; flex-direction: column; max-height: 90vh;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--cor-primaria); padding-bottom: 10px; margin-bottom: 15px;">
+                <h2 style="margin: 0; color: var(--cor-primaria);">📓 Meu Caderno Pessoal</h2>
+                <button class="btn-secundario" onclick="document.getElementById('modal-caderno-prof').style.display='none'">Fechar</button>
+            </div>
             
-            <div id="conteudo-dossie" style="overflow-y: auto; padding-right: 10px; flex-grow: 1;">
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; flex-grow: 1; overflow: hidden;">
+                <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column; border-right: 1px solid #ddd; padding-right: 15px;">
+                    <div style="margin-bottom: 10px;">
+                        <label style="font-size: 12px; font-weight: bold;">Filtrar por Categoria:</label>
+                        <select id="filtro-categoria-caderno" class="input-login" style="margin-bottom: 0; padding: 8px;" onchange="renderizarCadernoProf()">
+                            <option value="">Todas as Categorias</option>
+                            <option value="Anotação">📝 Anotações</option>
+                            <option value="Tarefa">✅ Tarefas</option>
+                            <option value="Lembrete">⏰ Lembretes</option>
+                            <option value="Outros">📌 Outros</option>
+                        </select>
+                    </div>
+                    <div id="lista-caderno-prof" style="overflow-y: auto; flex-grow: 1; padding-right: 5px; max-height: 50vh;">
+                        </div>
+                </div>
+                
+                <div style="flex: 1; min-width: 300px; overflow-y: auto;">
+                    <h4 style="margin-top: 0; color: var(--cor-primaria); margin-bottom: 15px;">Nova Anotação Pessoal</h4>
+                    
+                    <label style="font-size: 12px; font-weight: bold;">Categoria:</label>
+                    <select id="caderno-nova-categoria" class="input-login" style="padding: 8px; margin-bottom: 10px;">
+                        <option value="Anotação">📝 Anotação</option>
+                        <option value="Tarefa">✅ Tarefa</option>
+                        <option value="Lembrete">⏰ Lembrete</option>
+                        <option value="Outros">📌 Outros</option>
+                    </select>
+
+                    <label style="font-size: 12px; font-weight: bold;">Referente a (Contexto):</label>
+                    <select id="caderno-novo-contexto" class="input-login" style="padding: 8px; margin-bottom: 10px;" onchange="document.getElementById('caderno-novo-alvo').style.display = this.value === 'Geral' ? 'none' : 'block';">
+                        <option value="Geral">Geral (Nenhuma turma específica)</option>
+                        <option value="Turma">Uma Turma Inteira</option>
+                        <option value="Educando">Um Educando Específico</option>
+                    </select>
+                    <input type="text" id="caderno-novo-alvo" class="input-login" placeholder="Qual turma ou educando?" style="display: none; padding: 8px; margin-bottom: 10px;">
+
+                    <label style="font-size: 12px; font-weight: bold;">Notificar-me no dia (Opcional):</label>
+                    <input type="date" id="caderno-nova-data" class="input-login" style="padding: 8px; margin-bottom: 10px;">
+
+                    <label style="font-size: 12px; font-weight: bold;">Anotação:</label>
+                    <textarea id="caderno-novo-texto" class="input-login" style="height: 100px; resize: vertical; margin-bottom: 15px;"></textarea>
+
+                    <button id="btn-salvar-caderno" class="btn-primario" style="width: 100%;">💾 Salvar no Caderno</button>
+                </div>
             </div>
         </div>
     </div>
