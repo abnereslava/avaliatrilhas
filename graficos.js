@@ -64,7 +64,6 @@
         }
     }
 
-    // A nova função de bloqueio que não causa erros
     function travarFiltrosSecundarios() {
         gEscopo.disabled = true; gDisc.disabled = true; gHab.disabled = true;
         gMesInicio.disabled = true; gMesFim.disabled = true;
@@ -75,11 +74,13 @@
         
         const areaImpressao = document.getElementById('area-imprimir-grafico');
         if(areaImpressao) areaImpressao.style.display = 'none';
+
+        const legendaTela = document.getElementById('legenda-tela-grafico');
+        if(legendaTela) legendaTela.style.display = 'none';
     }
 
     function configurarCascata(selPolo, selTurno, selTurma, callback) {
         selPolo.addEventListener('change', () => {
-            // Reset rigoroso
             selTurno.innerHTML = '<option value="">Turno...</option>'; selTurno.disabled = true;
             selTurma.innerHTML = '<option value="">Turma...</option>'; selTurma.disabled = true;
             
@@ -330,7 +331,6 @@
         return { data: dados, labels: labels };
     }
 
-
     // --- DESENHO DO GRÁFICO (CHART.JS) ---
 
     btnGerar.addEventListener('click', () => {
@@ -402,7 +402,6 @@
         if (chartInstance) chartInstance.destroy();
         aviso.style.display = 'none'; canvas.style.display = 'block';
         
-        // Revela o botão de imprimir gráfico após a geração!
         const areaImpressao = document.getElementById('area-imprimir-grafico');
         if(areaImpressao) areaImpressao.style.display = 'block';
 
@@ -415,6 +414,17 @@
                 responsive: true, maintainAspectRatio: false,
                 plugins: {
                     legend: { position: 'top', labels: { font: { size: 14 } } },
+                    
+                    title: {
+                        display: true,
+                        text: escopo === 'geral' ? `Visão Geral - ${gTurma1.value} (${gTurno1.value})` :
+                              escopo === 'disciplina' ? `Evolução em: ${gDisc.value} - ${gTurma1.value}` :
+                              `Habilidade: ${gHab.options[gHab.selectedIndex]?.text} - ${gTurma1.value}`,
+                        font: { size: 16, family: "'Segoe UI', Tahoma, sans-serif" },
+                        padding: { bottom: 20 },
+                        color: '#0056b3'
+                    },
+
                     tooltip: { callbacks: { label: function(context) {
                         let val = context.parsed.r || context.parsed.y;
                         if (val === null || val === undefined) return "Sem dados";
@@ -431,6 +441,25 @@
                 }
             }
         });
+
+        // INJEÇÃO DA LEGENDA NA TELA APÓS GERAR O GRÁFICO
+        let containerG = document.querySelector('.container-grafico');
+        let legendaTela = document.getElementById('legenda-tela-grafico');
+        if (!legendaTela) {
+            legendaTela = document.createElement('div');
+            legendaTela.id = 'legenda-tela-grafico';
+            legendaTela.style.cssText = "margin-top: 15px; padding: 15px; background: white; border: 1px solid #ddd; border-radius: 8px; display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; font-size: 13px;";
+            legendaTela.innerHTML = `
+                <span style="font-weight: bold; margin-right: 10px; color: #333;">Critérios de Avaliação:</span>
+                <span style="color: #888888; font-weight: bold;">0 (N/A) - Não Aplicável</span>
+                <span style="color: #dc3545; font-weight: bold;">1 (N.D.) - Não Desenvolvida</span>
+                <span style="color: #d39e00; font-weight: bold;">2 (E.D.) - Em Desenvolvimento</span>
+                <span style="color: #17a2b8; font-weight: bold;">3 (E.C.) - Em Construção</span>
+                <span style="color: #28a745; font-weight: bold;">4 (Cons.) - Consolidada</span>
+            `;
+            containerG.parentNode.insertBefore(legendaTela, containerG.nextSibling);
+        }
+        legendaTela.style.display = 'flex';
     });
 
     // --- IMPRESSÃO DO GRÁFICO ---
@@ -438,9 +467,19 @@
     if(btnImprimirGrafico) {
         btnImprimirGrafico.addEventListener('click', () => {
             const canvasImg = canvas.toDataURL('image/png', 1.0);
-            let subtitulo = `Turma Alvo: ${gTurma1.value}`;
+            
+            let nomePolo = gPolo1.options[gPolo1.selectedIndex]?.text || gPolo1.value;
+            let subtitulo = `Turma Alvo: ${gTurma1.value} (${gTurno1.value} - ${nomePolo})`;
             let escopoStr = gEscopo.options[gEscopo.selectedIndex].text;
             let perStr = `Período: ${gMesInicio.options[gMesInicio.selectedIndex].text} a ${gMesFim.options[gMesFim.selectedIndex].text}`;
+            
+            let detalheExtra = "";
+            if (gEscopo.value === 'disciplina') {
+                detalheExtra = `<p><b>Disciplina:</b> <span style="color: #0056b3;">${gDisc.value}</span></p>`;
+            } else if (gEscopo.value === 'habilidade') {
+                let habTexto = gHab.options[gHab.selectedIndex]?.text || "Habilidade Selecionada";
+                detalheExtra = `<p><b>Disciplina:</b> ${gDisc.value}</p><p><b>Habilidade:</b> <span style="color: #0056b3;">${habTexto}</span></p>`;
+            }
             
             const janelaImpressao = window.open('', '', 'width=1000,height=800');
             janelaImpressao.document.write(`
@@ -453,6 +492,9 @@
                         .info-box { display: flex; justify-content: space-between; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 30px; text-align: left; }
                         .info-box p { margin: 5px 0; font-size: 14px; }
                         img { max-width: 100%; height: auto; margin-top: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border: 1px solid #eee; border-radius: 8px; }
+                        
+                        /* Estilização da Legenda Colorida de Texto */
+                        .legenda { margin-top: 30px; padding: 15px; background: white; border: 1px solid #ddd; border-radius: 8px; display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; font-size: 13px; }
                     </style>
                 </head>
                 <body>
@@ -461,13 +503,25 @@
                         <div>
                             <p><b>${subtitulo}</b></p>
                             <p><b>Análise:</b> ${escopoStr}</p>
+                            ${detalheExtra}
                         </div>
                         <div>
                             <p><b>${perStr}</b></p>
                             <p><b>Data de Emissão:</b> ${new Date().toLocaleDateString('pt-BR')}</p>
                         </div>
                     </div>
+                    
                     <img src="${canvasImg}">
+                    
+                    <div class="legenda">
+                        <span style="font-weight: bold; margin-right: 10px; color: #333;">Critérios de Avaliação:</span>
+                        <span style="color: #888888; font-weight: bold;">0 (N/A) - Não Aplicável</span>
+                        <span style="color: #dc3545; font-weight: bold;">1 (N.D.) - Não Desenvolvida</span>
+                        <span style="color: #d39e00; font-weight: bold;">2 (E.D.) - Em Desenvolvimento</span>
+                        <span style="color: #17a2b8; font-weight: bold;">3 (E.C.) - Em Construção</span>
+                        <span style="color: #28a745; font-weight: bold;">4 (Cons.) - Consolidada</span>
+                    </div>
+                    
                     <script>
                         setTimeout(() => { window.print(); window.close(); }, 800);
                     </script>
