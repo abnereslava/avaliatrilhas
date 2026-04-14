@@ -6,6 +6,7 @@ window.sysAlert = function(msg, title = "Aviso") {
         document.getElementById('sys-modal-title').innerText = title;
         document.getElementById('sys-modal-msg').innerText = msg;
         document.getElementById('sys-modal-input').style.display = 'none';
+        document.getElementById('sys-modal-textarea').style.display = 'none';
         document.getElementById('sys-modal-btn-cancel').style.display = 'none';
         const modal = document.getElementById('sys-modal-overlay');
         const btnOk = document.getElementById('sys-modal-btn-ok');
@@ -24,6 +25,7 @@ window.sysConfirm = function(msg, title = "Confirmação") {
         document.getElementById('sys-modal-title').innerText = title;
         document.getElementById('sys-modal-msg').innerText = msg;
         document.getElementById('sys-modal-input').style.display = 'none';
+        document.getElementById('sys-modal-textarea').style.display = 'none';
         document.getElementById('sys-modal-btn-cancel').style.display = 'block';
         const modal = document.getElementById('sys-modal-overlay');
         const btnOk = document.getElementById('sys-modal-btn-ok');
@@ -41,25 +43,38 @@ window.sysConfirm = function(msg, title = "Confirmação") {
     });
 };
 
-window.sysPrompt = function(msg, defaultText = "", title = "Entrada Necessária") {
+window.sysPrompt = function(msg, defaultText = "", title = "Entrada Necessária", isMultiline = false) {
     return new Promise((resolve) => {
         document.getElementById('sys-modal-title').innerText = title;
         document.getElementById('sys-modal-msg').innerText = msg;
+        
         const input = document.getElementById('sys-modal-input');
-        input.style.display = 'block';
-        input.value = defaultText;
+        const textarea = document.getElementById('sys-modal-textarea');
+        
+        if (isMultiline) {
+            input.style.display = 'none';
+            textarea.style.display = 'block';
+            textarea.value = defaultText;
+        } else {
+            textarea.style.display = 'none';
+            input.style.display = 'block';
+            input.value = defaultText;
+        }
+        
         document.getElementById('sys-modal-btn-cancel').style.display = 'block';
         const modal = document.getElementById('sys-modal-overlay');
         const btnOk = document.getElementById('sys-modal-btn-ok');
         const btnCancel = document.getElementById('sys-modal-btn-cancel');
         modal.style.display = 'flex';
-        input.focus();
+        
+        if(isMultiline) textarea.focus(); else input.focus();
+        
         const cleanUp = () => {
             modal.style.display = 'none';
             btnOk.removeEventListener('click', onOk);
             btnCancel.removeEventListener('click', onCancel);
         };
-        const onOk = () => { cleanUp(); resolve(input.value); };
+        const onOk = () => { cleanUp(); resolve(isMultiline ? textarea.value : input.value); };
         const onCancel = () => { cleanUp(); resolve(null); };
         btnOk.addEventListener('click', onOk);
         btnCancel.addEventListener('click', onCancel);
@@ -89,42 +104,36 @@ const tabelaPermissoes = {
     "acesso@trilhas.com": { perfil: "admin" },
     "coordenação@trilhas.com": { perfil: "coordenacao" },
     
-    // Professores do Polo 1
     "regente1@trilhas.com": { perfil: "professor", acessos: { 
         "polo1": { 
             "Manhã": { "1º Ano": ["Língua Portuguesa", "Matemática", "Literatura", "Ciências"], "2º Ano": ["Língua Portuguesa", "Matemática", "Literatura", "Ciências"] },
             "Tarde": { "1º Ano": ["Língua Portuguesa", "Matemática", "Literatura", "Ciências"], "2º Ano": ["Língua Portuguesa", "Matemática", "Literatura", "Ciências"] }
         } 
     }},
-    
     "regente2@trilhas.com": { perfil: "professor", acessos: { 
         "polo1": { 
             "Manhã": { "1º Ano": ["Artes e Musicalização"], "2º Ano": ["Artes e Musicalização"], "3º Ano": ["Língua Portuguesa", "Matemática", "Literatura", "Ciências", "Artes e Musicalização"], "5º Ano": ["Artes e Musicalização"] },
             "Tarde": { "1º Ano": ["Artes e Musicalização"], "2º Ano": ["Artes e Musicalização"], "3º Ano": ["Língua Portuguesa", "Matemática", "Literatura", "Ciências", "Artes e Musicalização"], "5º Ano": ["Artes e Musicalização"] }
         } 
     }},
-    
     "regente3@trilhas.com": { perfil: "professor", acessos: { 
         "polo1": { 
             "Manhã": { "4º Ano": ["Língua Portuguesa", "Matemática", "Literatura", "Ciências"], "5º Ano": ["Língua Portuguesa", "Matemática", "Literatura", "Ciências"] },
             "Tarde": { "4º Ano": ["Língua Portuguesa", "Matemática", "Literatura", "Ciências"], "5º Ano": ["Língua Portuguesa", "Matemática", "Literatura", "Ciências"] }
         } 
     }},
-    
     "especialista1@trilhas.com": { perfil: "professor", acessos: { 
         "polo1": { 
             "Manhã": { "1º Ano": ["Inglês", "Informática"], "2º Ano": ["Inglês", "Informática"], "3º Ano": ["Inglês", "Informática"], "4º Ano": ["Inglês", "Informática", "Artes e Musicalização"], "5º Ano": ["Inglês", "Informática"] },
             "Tarde": { "1º Ano": ["Inglês", "Informática"], "2º Ano": ["Inglês", "Informática"], "3º Ano": ["Inglês", "Informática"], "4º Ano": ["Inglês", "Informática", "Artes e Musicalização"], "5º Ano": ["Inglês", "Informática"] }
         } 
     }},
-    
     "especialista2@trilhas.com": { perfil: "professor", acessos: { 
         "polo1": { 
             "Manhã": { "1º Ano": ["Xadrez", "Ed. Física"], "2º Ano": ["Xadrez", "Ed. Física"], "3º Ano": ["Xadrez", "Ed. Física"], "4º Ano": ["Xadrez", "Ed. Física"], "5º Ano": ["Xadrez", "Ed. Física"] },
             "Tarde": { "1º Ano": ["Xadrez", "Ed. Física"], "2º Ano": ["Xadrez", "Ed. Física"], "3º Ano": ["Xadrez", "Ed. Física"], "4º Ano": ["Xadrez", "Ed. Física"], "5º Ano": ["Xadrez", "Ed. Física"] }
         } 
     }},
-    
     "especialista3@trilhas.com": { perfil: "professor", acessos: { 
         "polo1": { 
             "Manhã": { "1º Ano": ["Robótica"], "2º Ano": ["Robótica"], "3º Ano": ["Robótica"], "4º Ano": ["Robótica"], "5º Ano": ["Robótica"] },
@@ -135,29 +144,24 @@ const tabelaPermissoes = {
             "Tarde": { "2º Ano": ["Informática", "Robótica"], "3º Ano A": ["Robótica"], "3º Ano B": ["Robótica"], "4º e 5º": ["Informática", "Robótica"] }
         } 
     }},
-
-// Professores do Polo 2
     "geral1@trilhas.com": { perfil: "professor", acessos: {
         "polo2": { 
             "Manhã": { "Infantil IV": ["Inglês"], "Infantil V e 1º Ano": ["Inglês"], "2º Ano": ["Inglês", "Matemática"] },
             "Tarde": { "2º Ano": ["Inglês", "Matemática"], "3º Ano A": ["Inglês"], "3º Ano B": ["Inglês"], "4º e 5º": ["Inglês", "Matemática"] }
         }
     }},
-
     "geral2@trilhas.com": { perfil: "professor", acessos: {
         "polo2": { 
             "Manhã": { "Infantil IV": ["Psicomotricidade", "Xadrez"], "Infantil V e 1º Ano": ["Psicomotricidade", "Xadrez"], "2º Ano": ["Jogos de Oposição", "Xadrez"] },
             "Tarde": { "2º Ano": ["Jogos de Oposição", "Xadrez"], "3º Ano A": ["Xadrez"], "3º Ano B": ["Xadrez"] }
         }
     }},
-
     "geral3@trilhas.com": { perfil: "professor", acessos: {
         "polo2": { 
             "Manhã": { "Infantil IV": ["Matemática", "Português"], "Infantil V e 1º Ano": ["Matemática", "Português"], "2º Ano": ["Matemática", "Português"] },
             "Tarde": { "2º Ano": ["Matemática", "Português"], "3º Ano A": ["Matemática", "Português"], "3º Ano B": ["Matemática", "Português"], "4º e 5º": ["Português"] }
         }
     }},
-
     "geral4@trilhas.com": { perfil: "professor", acessos: {
         "polo2": { 
             "Manhã": { "2º Ano": ["Jogos de Oposição"] },
@@ -190,12 +194,24 @@ auth.onAuthStateChanged(async (user) => {
         }
         
         aplicarPermissoesDeInterface();
+        
+        if (typeof iniciarOuvinteNotificacoes === 'function') iniciarOuvinteNotificacoes();
+
         telaLogin.style.display = 'none'; 
         btnSair.style.display = 'block'; 
     } else { 
         telaLogin.style.display = 'flex'; 
         btnSair.style.display = 'none'; 
         if (spanUsuario) spanUsuario.style.display = 'none';
+        
+        const sino = document.getElementById('container-sino');
+        const caderno = document.getElementById('btn-caderno-prof');
+        if (sino) sino.style.display = 'none';
+        if (caderno) caderno.style.display = 'none';
+        
+        if (typeof unsubscribeNotificacoes !== 'undefined' && unsubscribeNotificacoes) unsubscribeNotificacoes();
+        window.meuCaderno = []; // Limpa o caderno da memória ao deslogar
+        
         usuarioPermissoes = null;
     }
 });
@@ -245,7 +261,7 @@ document.getElementById('btn-sair').addEventListener('click', async () => {
 });
 
 // =========================================================
-// 4. BANCO DE DADOS LOCAL, CONTEXTO E FILA DE LOGS
+// 4. BANCO DE DADOS LOCAL E CONTEXTO
 // =========================================================
 const escola = {
     meses: [ 
@@ -348,7 +364,6 @@ function configurarCascataFiltros(prefixo, temDisciplina) {
             
             let turmasDoTurno = escola.polos[polo][turno];
             if (usuarioPermissoes?.perfil === 'professor') {
-                // AGORA ELE LÊ A CAMADA DO TURNO PARA FILTRAR AS TURMAS
                 const permitidas = Object.keys(usuarioPermissoes.acessos[polo]?.[turno] || {});
                 turmasDoTurno = turmasDoTurno.filter(t => permitidas.includes(t));
             }
@@ -375,7 +390,6 @@ function configurarCascataFiltros(prefixo, temDisciplina) {
                 discps.sort(); 
             } 
             if (usuarioPermissoes?.perfil === 'professor') {
-                // AGORA ELE LÊ A CAMADA DO TURNO PARA FILTRAR AS DISCIPLINAS
                 const permitidas = usuarioPermissoes.acessos[polo]?.[turno]?.[turma] || [];
                 discps = discps.filter(disciplina => permitidas.includes(disciplina));
             }
@@ -389,12 +403,8 @@ function configurarCascataFiltros(prefixo, temDisciplina) {
         d.addEventListener('change', () => {
             tentarNavegar(() => {
                 if (mes) {
-                    if (d.value) {
-                        mes.disabled = false; 
-                    } else {
-                        mes.selectedIndex = 0;
-                        mes.disabled = true;
-                    }
+                    if (d.value) { mes.disabled = false; } 
+                    else { mes.selectedIndex = 0; mes.disabled = true; }
                 }
                 carregarEAtualizarInterface();
             });
@@ -422,10 +432,7 @@ function carregarEAtualizarInterface() {
         }); 
         carregarDadosDaNuvem(ctxTurma, ctxDisc); 
     } else { 
-        botoes.forEach(id => {
-            const btn = document.getElementById(id);
-            if (btn) btn.disabled = true;
-        }); 
+        botoes.forEach(id => { const btn = document.getElementById(id); if (btn) btn.disabled = true; }); 
         document.getElementById('cabecalho-tabela').innerHTML = "<tr><th>Nome do Estudante</th></tr>"; 
         document.getElementById('corpo-tabela').innerHTML = ""; 
     }
@@ -505,9 +512,7 @@ if (document.getElementById('btn-abrir-opcoes-avancadas')) {
         modalAvancado.style.display = 'flex'; 
     });
 
-    document.getElementById('btn-fechar-opcoes').addEventListener('click', () => {
-        modalAvancado.style.display = 'none';
-    });
+    document.getElementById('btn-fechar-opcoes').addEventListener('click', () => { modalAvancado.style.display = 'none'; });
 
     document.getElementById('btn-executar-backup').addEventListener('click', () => { 
         const dadosConvertidos = JSON.stringify(bancoDeDados, null, 2); 
@@ -527,16 +532,11 @@ if (document.getElementById('btn-abrir-opcoes-avancadas')) {
         const btn = document.getElementById('btn-confirmar-acao-avancada');
         
         if (this.value === "upload") {
-            areaUpload.style.display = 'block';
-            btn.textContent = "🔄 Restaurar Backup na Nuvem";
-            btn.disabled = false;
+            areaUpload.style.display = 'block'; btn.textContent = "🔄 Restaurar Backup na Nuvem"; btn.disabled = false;
         } else if (this.value === "reset") {
-            areaUpload.style.display = 'none';
-            btn.textContent = "☢️ DELETAR TODOS OS DADOS DA ESCOLA";
-            btn.disabled = false;
+            areaUpload.style.display = 'none'; btn.textContent = "☢️ DELETAR TODOS OS DADOS DA ESCOLA"; btn.disabled = false;
         } else {
-            areaUpload.style.display = 'none';
-            btn.disabled = true;
+            areaUpload.style.display = 'none'; btn.disabled = true;
         }
     });
 
@@ -556,7 +556,6 @@ if (document.getElementById('btn-abrir-opcoes-avancadas')) {
 
         try {
             await auth.signInWithEmailAndPassword(email, senha);
-            
             if (acao === "reset") {
                 const turmasSnap = await db.collection("turmas").get(); 
                 const loteT = db.batch();
@@ -578,10 +577,8 @@ if (document.getElementById('btn-abrir-opcoes-avancadas')) {
                     btn.disabled = false; btn.textContent = "Executar Ação";
                     return await sysAlert("Por favor, selecione o arquivo .json do backup.", "Aviso");
                 }
-                
                 const file = fileInput.files[0]; 
                 const reader = new FileReader();
-                
                 reader.onload = async function(e) {
                     try {
                         const backupData = JSON.parse(e.target.result);
@@ -607,17 +604,19 @@ if (document.getElementById('btn-abrir-opcoes-avancadas')) {
 }
 
 // =========================================================
-// 8. SISTEMA DE ANOTAÇÕES DO ALUNO (COM AUTO-SAVE)
+// 8. SISTEMA DE ANOTAÇÕES E OCORRÊNCIAS (COM AUTO-SAVE E EDIÇÃO)
 // =========================================================
 let alunoAnotacaoAtual = null;
+window.anotacaoEditIndex = null; 
 
 window.abrirModalAnotacoes = function(idAluno) {
     const { ctxTurma } = getContextosAtuais();
     alunoAnotacaoAtual = bancoDeDados[ctxTurma].alunos.find(a => a.id === idAluno);
     if (!alunoAnotacaoAtual) return;
 
-    document.getElementById('titulo-modal-anotacoes').innerText = `📝 Anotações: ${alunoAnotacaoAtual.nome}`;
+    document.getElementById('titulo-modal-anotacoes').innerText = `Caderno de: ${alunoAnotacaoAtual.nome}`;
     document.getElementById('texto-nova-anotacao').value = "";
+    document.getElementById('tipo-nova-anotacao').value = "Anotação";
     
     atualizarListaAnotacoesVisuais();
     document.getElementById('modal-anotacoes-aluno').style.display = 'flex';
@@ -634,13 +633,19 @@ function atualizarListaAnotacoesVisuais() {
     let html = "";
     for (let i = alunoAnotacaoAtual.anotacoes.length - 1; i >= 0; i--) {
         const nota = alunoAnotacaoAtual.anotacoes[i];
+        const tipoNota = nota.tipo || "Anotação"; 
+        
+        const isOcorrencia = tipoNota === "Ocorrência";
+        const corBorda = isOcorrencia ? "#dc3545" : "var(--cor-primaria)";
+        const txtBadge = isOcorrencia ? `<b style="color:#dc3545; font-size: 10px; border: 1px solid #dc3545; padding: 1px 4px; border-radius: 3px; margin-left: 5px;">OCORRÊNCIA</b>` : "";
+
         html += `
-            <div class="item-anotacao">
+            <div class="item-anotacao" style="border-left-color: ${corBorda};">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 3px; margin-bottom: 5px;">
-                    <span class="item-anotacao-header" style="border: none; margin: 0; padding: 0;">📅 ${nota.data} | 📍 ${nota.disciplina}</span>
+                    <span class="item-anotacao-header" style="border: none; margin: 0; padding: 0;">📅 ${nota.data} | 📍 ${nota.disciplina} ${txtBadge}</span>
                     <div>
-                        <button class="btn-acao-nota" onclick="editarAnotacao(${i})" title="Editar esta anotação">✏️</button>
-                        <button class="btn-acao-nota" onclick="excluirAnotacao(${i})" title="Excluir esta anotação">🗑️</button>
+                        <button class="btn-acao-nota" onclick="editarAnotacao(${i})" title="Editar (Data, Disciplina, Tipo e Texto)">✏️</button>
+                        <button class="btn-acao-nota" onclick="excluirAnotacao(${i})" title="Excluir este registro">🗑️</button>
                     </div>
                 </div>
                 <div style="white-space: pre-wrap;">${nota.texto}</div>
@@ -650,28 +655,79 @@ function atualizarListaAnotacoesVisuais() {
     container.innerHTML = html;
 }
 
-window.editarAnotacao = async function(indexReal) {
+window.editarAnotacao = function(indexReal) {
     const nota = alunoAnotacaoAtual.anotacoes[indexReal];
-    const novoTexto = await sysPrompt("Edite o texto da anotação:", nota.texto, "Editar Anotação");
+    window.anotacaoEditIndex = indexReal; 
     
-    if (novoTexto !== null && novoTexto.trim() !== "") {
-        alunoAnotacaoAtual.anotacoes[indexReal].texto = novoTexto.trim();
-        temAlteracoesNaoSalvas = true;
-        atualizarListaAnotacoesVisuais();
-        renderizarTabela(); 
-        await window.salvarDadosNaNuvem(); 
-        if(typeof registrarLog === 'function') registrarLog(`Editou uma anotação do educando: ${alunoAnotacaoAtual.nome}.`);
+    document.getElementById('edit-anotacao-data').value = nota.data;
+    document.getElementById('edit-anotacao-tipo').value = nota.tipo || "Anotação";
+    document.getElementById('edit-anotacao-texto').value = nota.texto;
+    
+    const selDisc = document.getElementById('edit-anotacao-disciplina');
+    selDisc.innerHTML = "";
+    
+    const polo = document.getElementById('filtro-polo').value;
+    const turno = document.getElementById('filtro-turno').value;
+    const turma = document.getElementById('filtro-turma').value;
+    
+    let discps = polo === 'polo1' ? escola.disciplinas.polo1 : [...escola.disciplinas.polo2Base]; 
+    if (polo === 'polo2') { 
+        if (turma.includes('Infantil') || turma.includes('1º Ano')) discps.push("Psicomotricidade"); 
+        else discps.push("Jogos de Oposição"); 
+        discps.sort(); 
+    } 
+    if (usuarioPermissoes?.perfil === 'professor') {
+        const permitidas = usuarioPermissoes.acessos[polo]?.[turno]?.[turma] || [];
+        discps = discps.filter(disciplina => permitidas.includes(disciplina));
     }
+    
+    if(!discps.includes("Geral")) discps.unshift("Geral");
+    if(!discps.includes(nota.disciplina)) discps.push(nota.disciplina); 
+    
+    discps.forEach(d => selDisc.appendChild(new Option(d, d)));
+    selDisc.value = nota.disciplina;
+    
+    document.getElementById('modal-editar-anotacao').style.display = 'flex';
 }
 
+document.getElementById('btn-cancelar-edicao-anotacao').addEventListener('click', () => {
+    document.getElementById('modal-editar-anotacao').style.display = 'none';
+});
+
+document.getElementById('btn-salvar-edicao-anotacao').addEventListener('click', async () => {
+    const i = window.anotacaoEditIndex;
+    const novaData = document.getElementById('edit-anotacao-data').value.trim();
+    const novaDisc = document.getElementById('edit-anotacao-disciplina').value;
+    const novoTipo = document.getElementById('edit-anotacao-tipo').value;
+    const novoTexto = document.getElementById('edit-anotacao-texto').value.trim();
+    
+    if (novoTexto === "" || novaData === "") return await sysAlert("Data e Descrição são campos obrigatórios.", "Aviso");
+    
+    alunoAnotacaoAtual.anotacoes[i] = { data: novaData, disciplina: novaDisc, tipo: novoTipo, texto: novoTexto };
+    
+    temAlteracoesNaoSalvas = true;
+    document.getElementById('modal-editar-anotacao').style.display = 'none';
+    atualizarListaAnotacoesVisuais();
+    renderizarTabela();
+    await window.salvarDadosNaNuvem();
+    
+    if(typeof registrarLog === 'function') {
+        if(novoTipo === "Ocorrência") {
+            registrarLog(`Editou uma Ocorrência do educando: ${alunoAnotacaoAtual.nome}.`, { isOcorrencia: true, lida: false, textoOcorrencia: novoTexto, alunoNome: alunoAnotacaoAtual.nome });
+        } else {
+            registrarLog(`Editou um registro (${novoTipo}) do educando: ${alunoAnotacaoAtual.nome}.`);
+        }
+    }
+});
+
 window.excluirAnotacao = async function(indexReal) {
-    if (await sysConfirm("Tem certeza de que deseja apagar esta anotação?", "Excluir Anotação")) {
+    if (await sysConfirm("Tem certeza de que deseja apagar este registro?", "Excluir Registro")) {
         alunoAnotacaoAtual.anotacoes.splice(indexReal, 1);
         temAlteracoesNaoSalvas = true;
         atualizarListaAnotacoesVisuais();
         renderizarTabela();
         await window.salvarDadosNaNuvem();
-        if(typeof registrarLog === 'function') registrarLog(`Excluiu uma anotação do educando: ${alunoAnotacaoAtual.nome}.`);
+        if(typeof registrarLog === 'function') registrarLog(`Excluiu um registro do educando: ${alunoAnotacaoAtual.nome}.`);
     }
 }
 
@@ -682,20 +738,29 @@ document.getElementById('btn-fechar-anotacoes').addEventListener('click', () => 
 
 document.getElementById('btn-salvar-anotacao').addEventListener('click', async () => {
     const texto = document.getElementById('texto-nova-anotacao').value.trim();
-    if (texto === "") return await sysAlert("Escreva algo antes de salvar.", "Aviso");
+    const tipo = document.getElementById('tipo-nova-anotacao').value;
+    if (texto === "") return await sysAlert("Escreva uma descrição antes de salvar.", "Aviso");
 
     const disciplinaAtual = document.getElementById('filtro-disciplina').value || "Geral";
     const dataAtual = new Date().toLocaleDateString('pt-BR');
 
     if (!alunoAnotacaoAtual.anotacoes) alunoAnotacaoAtual.anotacoes = [];
-    alunoAnotacaoAtual.anotacoes.push({ data: dataAtual, disciplina: disciplinaAtual, texto: texto });
+    alunoAnotacaoAtual.anotacoes.push({ data: dataAtual, disciplina: disciplinaAtual, tipo: tipo, texto: texto });
     temAlteracoesNaoSalvas = true; 
+    
     document.getElementById('texto-nova-anotacao').value = ""; 
+    document.getElementById('tipo-nova-anotacao').value = "Anotação";
     atualizarListaAnotacoesVisuais(); 
     renderizarTabela(); 
     
     await window.salvarDadosNaNuvem(); 
-    if(typeof registrarLog === 'function') registrarLog(`Adicionou anotação para o educando: ${alunoAnotacaoAtual.nome}.`);
+    if(typeof registrarLog === 'function') {
+        if(tipo === "Ocorrência") {
+            registrarLog(`Registrou uma Ocorrência para o educando: ${alunoAnotacaoAtual.nome}.`, { isOcorrencia: true, lida: false, textoOcorrencia: texto, alunoNome: alunoAnotacaoAtual.nome });
+        } else {
+            registrarLog(`Registrou uma Anotação Pedagógica para o educando: ${alunoAnotacaoAtual.nome}.`);
+        }
+    }
 });
 
 // =========================================================
@@ -801,7 +866,6 @@ window.abrirDossieAluno = async function(idAluno) {
     const modal = document.getElementById('modal-dossie-aluno');
     const conteudo = document.getElementById('conteudo-dossie');
 
-    // A MÁGICA ESTÁ AQUI: Atualiza os textos e botão SÓ DEPOIS de encontrar o aluno!
     document.getElementById('titulo-dossie').innerText = `Ficha do Estudante: ${aluno.nome}`;
     document.getElementById('btn-ia-ficha').setAttribute('onclick', `gerarPromptIA(${aluno.id}, this)`);
     
@@ -861,18 +925,42 @@ window.abrirDossieAluno = async function(idAluno) {
     if(!temNotas) html += `<p style="font-size: 13px; color: #666; font-style: italic;">Ainda não há avaliações quantitativas registradas no sistema.</p>`;
     html += `</div>`;
 
-    html += `<div style="margin-top: 20px; border-top: 2px dashed #ddd; padding-top: 15px;">
-                <h3 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px;">📝 Caderno de Anotações</h3>`;
-    
+    let anotacoesComuns = [];
+    let ocorrencias = [];
+
     if (aluno.anotacoes && aluno.anotacoes.length > 0) {
-        for (let i = aluno.anotacoes.length - 1; i >= 0; i--) {
-            const nota = aluno.anotacoes[i];
-            html += `<div style="background: white; border-left: 4px solid var(--cor-secundaria); padding: 10px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                        <p style="font-size: 12px; color: #666; margin: 0 0 5px 0;">📅 <b>${nota.data}</b> | 📍 ${nota.disciplina}</p>
+        aluno.anotacoes.forEach(nota => {
+            if (nota.tipo === "Ocorrência") ocorrencias.push(nota);
+            else anotacoesComuns.push(nota);
+        });
+    }
+
+    html += `<div style="margin-top: 20px; border-top: 2px dashed #ddd; padding-top: 15px;">
+                <h3 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px;">📝 Anotações Pedagógicas</h3>`;
+    if (anotacoesComuns.length > 0) {
+        for (let i = anotacoesComuns.length - 1; i >= 0; i--) {
+            const nota = anotacoesComuns[i];
+            html += `<div class="bloco-registro-dossie" style="background: white; border-left: 4px solid var(--cor-secundaria); padding: 10px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative;">
+                        <button class="btn-ocultar-print no-print" onclick="this.parentElement.classList.toggle('oculto-impressao'); this.innerText = this.parentElement.classList.contains('oculto-impressao') ? '👁️ Revelar na impressão' : '🙈 Esconder na impressão';" title="Esconder isso ao imprimir a ficha">🙈 Esconder na impressão</button>
+                        <p style="font-size: 12px; color: #666; margin: 0 0 5px 0; padding-right: 70px;">📅 <b>${nota.data}</b> | 📍 ${nota.disciplina}</p>
                         <p style="font-size: 14px; margin: 0; white-space: pre-wrap; color: #333;">${nota.texto}</p>
                      </div>`;
         }
-    } else { html += `<p style="font-size: 13px; color: #666; font-style: italic;">Nenhuma anotação qualitativa registrada.</p>`; }
+    } else { html += `<p style="font-size: 13px; color: #666; font-style: italic;">Nenhuma anotação pedagógica registrada.</p>`; }
+    html += `</div>`;
+
+    html += `<div style="margin-top: 20px; border-top: 2px dashed #ddd; padding-top: 15px;">
+                <h3 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px;">⚠️ Ocorrências Disciplinares</h3>`;
+    if (ocorrencias.length > 0) {
+        for (let i = ocorrencias.length - 1; i >= 0; i--) {
+            const nota = ocorrencias[i];
+            html += `<div class="bloco-registro-dossie" style="background: white; border-left: 4px solid var(--cor-borda); padding: 10px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative;">
+                        <button class="btn-ocultar-print no-print" onclick="this.parentElement.classList.toggle('oculto-impressao'); this.innerText = this.parentElement.classList.contains('oculto-impressao') ? '👁️ Revelar na impressão' : '🙈 Esconder na impressão';" title="Esconder isso ao imprimir a ficha">👁️ Imprimir</button>
+                        <p style="font-size: 12px; color: #666; margin: 0 0 5px 0; padding-right: 70px;">📅 <b>${nota.data}</b> | 📍 ${nota.disciplina}</p>
+                        <p style="font-size: 14px; margin: 0; white-space: pre-wrap; color: #333;">${nota.texto}</p>
+                     </div>`;
+        }
+    } else { html += `<p style="font-size: 13px; color: #666; font-style: italic;">Nenhuma ocorrência disciplinar registrada.</p>`; }
     html += `</div>`;
 
     conteudo.innerHTML = html;
@@ -892,16 +980,17 @@ window.imprimirDossie = function() {
                 h3 { color: #000; margin-top: 30px; }
                 ul { list-style-type: none; padding-left: 0; }
                 .bolinha { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 1px solid #333; }
-                .cor-0 { background-color: #cccccc; }
-                .cor-1 { background-color: #ff4d4d; }
-                .cor-2 { background-color: #ffc107; }
-                .cor-3 { background-color: #17a2b8; }
+                .cor-0 { background-color: #9e9e9e; }
+                .cor-1 { background-color: #dc3545; }
+                .cor-2 { background-color: #d39e00; }
+                .cor-3 { background-color: #007bff; }
                 .cor-4 { background-color: #28a745; }
+                .oculto-impressao { display: none !important; } 
                 @media print { .no-print { display: none; } }
             </style>
         </head><body>
             <h1>${titulo}</h1>${conteudo}
-            <script>setTimeout(() => { window.print(); window.close(); }, 500);</script>
+            <script>setTimeout(() => { window.print(); window.close(); }, 500);<\/script>
         </body></html>
     `);
     janelaImpressao.document.close();
@@ -959,11 +1048,25 @@ function renderizarTabela() {
     const habsAtivas = bancoDeDados[ctxDisc].habilidades.filter(h => h.ordemMes <= mesAtual);
 
     let theadComHabs = `<tr><th>Nome do Estudante</th>`;
+    
     habsAtivas.forEach((hab, idx) => {
         if(hab.oculta) {
             theadComHabs += `<th title="${hab.texto}" style="text-align:center; min-width: 50px;">H${idx + 1} <button class="btn-visibilidade" onclick="alternarVisibilidadeHab(${hab.id})">➕</button></th>`;
         } else {
-            theadComHabs += `<th style="min-width: 200px;"><div class="cabecalho-hab"><span>Hab. ${idx + 1} <small>(${hab.nomeMes})</small></span><button class="btn-visibilidade" onclick="alternarVisibilidadeHab(${hab.id})">➖ Ocultar</button></div><div class="texto-hab" title="${hab.texto}">${hab.texto}</div></th>`;
+            theadComHabs += `<th style="min-width: 190px; max-width: 200px;">
+                <div class="cabecalho-hab" style="max-width: 180px;">
+                    <span style="font-size: 12px; font-weight: bold;">Hab. ${idx + 1}</span>
+                    <div style="display: flex; gap: 4px; align-items: center;">
+                        <button onclick="editarTextoHabilidade(${hab.id})" title="Editar texto desta habilidade" style="background: none; border: none; cursor: pointer; font-size: 11px; padding: 2px; opacity: 0.6; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">✏️</button>
+                        <button onclick="moverHabilidade(${hab.id}, -1)" title="Mover coluna para a esquerda" style="background: none; border: none; cursor: pointer; font-size: 10px; color: #999; padding: 2px; transition: 0.2s;" onmouseover="this.style.color='#333'" onmouseout="this.style.color='#999'">◀</button>
+                        <button onclick="moverHabilidade(${hab.id}, 1)" title="Mover coluna para a direita" style="background: none; border: none; cursor: pointer; font-size: 10px; color: #999; padding: 2px; transition: 0.2s;" onmouseover="this.style.color='#333'" onmouseout="this.style.color='#999'">▶</button>
+                        <button class="btn-visibilidade" onclick="alternarVisibilidadeHab(${hab.id})" title="Ocultar coluna">➖</button>
+                    </div>
+                </div>
+                <div class="texto-hab" title="${hab.texto}" style="max-width: 180px;">
+                    ${hab.texto}
+                </div>
+            </th>`;
         }
     });
     
@@ -1098,13 +1201,11 @@ function verificarEstadoDoMes() {
 // 12. MODAIS DE NEGÓCIO (GERENCIAMENTO DE ALUNOS/HABS)
 // =========================================================
 window.mudarAbaAlu = function(a) { 
-    // Esconde todas as abas e tira a classe 'ativa'
     ['add', 'copiar', 'mover', 'excluir'].forEach(aba => {
         document.getElementById(`aba-alu-${aba}`).style.display = a === aba ? 'block' : 'none'; 
         document.getElementById(`tab-alu-${aba}`).className = a === aba ? 'tab-btn ativa' : 'tab-btn'; 
     });
     
-    // Se não for a aba de adicionar, popula a lista de alunos com checkboxes
     if (a !== 'add') { 
         const { ctxTurma } = getContextosAtuais(); 
         const lh = document.getElementById(`lista-checkbox-alu-${a}`); 
@@ -1124,9 +1225,7 @@ document.getElementById('btn-abrir-modal-alu').addEventListener('click', () => {
     mAlu.style.display = "flex"; 
 }); 
 
-document.getElementById('btn-modal-alu-cancelar').addEventListener('click', () => { 
-    mAlu.style.display = "none"; 
-});
+document.getElementById('btn-modal-alu-cancelar').addEventListener('click', () => { mAlu.style.display = "none"; });
 
 document.getElementById('btn-modal-alu-confirmar').addEventListener('click', async () => { 
     const { ctxTurma } = getContextosAtuais(); 
@@ -1269,3 +1368,289 @@ document.getElementById('btn-modal-hab-confirmar').addEventListener('click', asy
     mHab.style.display = "none"; 
     renderizarTabela(); 
 });
+
+// =========================================================
+// 13. EDIÇÃO E REORDENAÇÃO DE HABILIDADES
+// =========================================================
+window.moverHabilidade = function(idHab, direcao) {
+    const { ctxDisc } = getContextosAtuais();
+    if (!bancoDeDados[ctxDisc] || !bancoDeDados[ctxDisc].habilidades) return;
+
+    const habs = bancoDeDados[ctxDisc].habilidades;
+    const index = habs.findIndex(h => h.id === idHab);
+    
+    if (index < 0) return;
+    
+    if (direcao === -1 && index > 0) { 
+        const temp = habs[index];
+        habs[index] = habs[index - 1];
+        habs[index - 1] = temp;
+    } else if (direcao === 1 && index < habs.length - 1) { 
+        const temp = habs[index];
+        habs[index] = habs[index + 1];
+        habs[index + 1] = temp;
+    } else {
+        return; 
+    }
+    
+    temAlteracoesNaoSalvas = true;
+    if(window.logsPendentes) window.logsPendentes.push(`Reordenou a posição de uma habilidade`);
+    renderizarTabela();
+}
+
+window.editarTextoHabilidade = async function(idHab) {
+    const { ctxDisc } = getContextosAtuais();
+    const hab = bancoDeDados[ctxDisc].habilidades.find(h => h.id === idHab);
+    if (!hab) return;
+
+    const novoTexto = await sysPrompt("Edite o texto da habilidade:", hab.texto, "Editar Habilidade", true);
+    
+    if (novoTexto !== null && novoTexto.trim() !== "" && novoTexto.trim() !== hab.texto) {
+        hab.texto = novoTexto.trim();
+        temAlteracoesNaoSalvas = true;
+        if(window.logsPendentes) window.logsPendentes.push(`Editou o texto de uma habilidade`);
+        renderizarTabela();
+    }
+}
+
+// =========================================================
+// 14. SISTEMA DE NOTIFICAÇÕES EM TEMPO REAL (SINO)
+// =========================================================
+let unsubscribeNotificacoes = null;
+let ultimaAuditoriaSnap = []; // Guarda a auditoria para misturar com os lembretes
+
+window.iniciarOuvinteNotificacoes = function() {
+    if (!usuarioPermissoes || !auth.currentUser) return;
+    
+    document.getElementById('container-sino').style.display = 'flex';
+    document.getElementById('btn-caderno-prof').style.display = 'block';
+
+    if (unsubscribeNotificacoes) unsubscribeNotificacoes();
+
+    // 1. Carrega o caderno pessoal PRIMEIRO
+    carregarMeuCaderno();
+
+    // 2. Escuta as ocorrências da escola e mistura tudo
+    const db = firebase.firestore();
+    unsubscribeNotificacoes = db.collection("sistema").doc("auditoria").onSnapshot((doc) => {
+        if (doc.exists) ultimaAuditoriaSnap = doc.data().registros || [];
+        window.forcarAtualizacaoSino();
+    });
+}
+
+window.forcarAtualizacaoSino = function() {
+    if (!usuarioPermissoes || !auth.currentUser) return;
+    const emailTratado = auth.currentUser.email.trim().toLowerCase();
+    const meuNomeUsuario = emailTratado.split('@')[0];
+    const isCoord = usuarioPermissoes.perfil === 'admin' || usuarioPermissoes.perfil === 'coordenacao';
+
+    let notificacoesAtivas = [];
+
+    // Ocorrências do Sistema Geral
+    if (isCoord) {
+        notificacoesAtivas = ultimaAuditoriaSnap.filter(r => r.isOcorrencia && !r.lida);
+    } else {
+        notificacoesAtivas = ultimaAuditoriaSnap.filter(r => r.isOcorrencia && r.lida && r.usuario === meuNomeUsuario && !r.cienteProf);
+    }
+
+    // Lembretes do Caderno Pessoal
+    const hoje = new Date().toISOString().split('T')[0];
+    const lembretes = (window.meuCaderno || []).filter(n => n.dataLembrete && n.dataLembrete <= hoje && !n.concluido);
+    
+    lembretes.forEach(l => {
+        notificacoesAtivas.push({
+            isLembrete: true,
+            idAnotacao: l.id,
+            categoria: l.categoria,
+            texto: l.texto,
+            dataLembrete: l.dataLembrete
+        });
+    });
+
+    atualizarSino(notificacoesAtivas, isCoord);
+}
+
+function atualizarSino(notifs, isCoord) {
+    const badge = document.getElementById('badge-sino');
+    const lista = document.getElementById('lista-notificacoes');
+
+    if (notifs.length > 0) { badge.innerText = notifs.length; badge.style.display = 'inline-block'; } 
+    else { badge.style.display = 'none'; }
+
+    if (notifs.length === 0) {
+        lista.innerHTML = '<div style="padding: 15px; text-align: center; color: #999; font-size: 13px;">Nenhuma notificação pendente</div>';
+        return;
+    }
+
+    let html = "";
+    notifs.forEach(n => {
+        if (n.isLembrete) {
+            html += `
+                <div class="notificacao-item" style="border-left: 4px solid #ffc107;" onclick="abrirMeuCaderno()">
+                    <span style="font-weight:bold; color:#d39e00;">⏰ Lembrete: ${n.categoria}</span>
+                    <span style="color:#555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px;">${n.texto}</span>
+                    <span style="font-size:11px; color:#999;">Agendado para hoje ou atrasado</span>
+                </div>
+            `;
+        } else if (isCoord) {
+            html += `
+                <div class="notificacao-item n-coordenacao" onclick="abrirOcorrenciaPeloLog(${n.timestamp})">
+                    <span style="font-weight:bold; color:#dc3545;">⚠️ Nova Ocorrência</span>
+                    <span style="color:#555; font-size: 12px;">Estudante: <b>${n.alunoNome}</b></span>
+                    <span style="font-size:11px; color:#999;">Enviado por: ${n.usuario} em ${n.data}</span>
+                </div>
+            `;
+        } else {
+            html += `
+                <div class="notificacao-item n-professor" onclick="marcarCienteProfessor(${n.timestamp})">
+                    <span style="font-weight:bold; color:#28a745;">✔️ Ocorrência Lida</span>
+                    <span style="color:#555; font-size: 12px;">A coordenação leu a ocorrência de <b>${n.alunoNome}</b>.</span>
+                    <span style="font-size:11px; color:#999;">Clique para dispensar aviso</span>
+                </div>
+            `;
+        }
+    });
+    lista.innerHTML = html;
+}
+
+window.marcarCienteProfessor = async function(timestamp) {
+    try {
+        const db = firebase.firestore();
+        const docRef = db.collection("sistema").doc("auditoria");
+        const docSnap = await docRef.get();
+        if (docSnap.exists) {
+            let histNuvem = docSnap.data().registros;
+            let index = histNuvem.findIndex(l => l.timestamp === timestamp);
+            if (index !== -1) {
+                histNuvem[index].cienteProf = true; 
+                await docRef.set({ registros: histNuvem });
+                document.getElementById('dropdown-notificacoes').style.display = 'none';
+            }
+        }
+    } catch (e) { console.error(e); }
+}
+
+document.getElementById('container-sino').addEventListener('click', (e) => {
+    const dropdown = document.getElementById('dropdown-notificacoes');
+    if(e.target.closest('.notificacoes-dropdown') && !e.target.closest('.notificacao-item')) return; 
+    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+});
+
+// =========================================================
+// 15. CADERNO PESSOAL DO PROFESSOR (ISOLADO)
+// =========================================================
+window.meuCaderno = [];
+
+window.carregarMeuCaderno = async function() {
+    if (!auth.currentUser) return;
+    const nomeUsuario = auth.currentUser.email.trim().toLowerCase().split('@')[0];
+    try {
+        const db = firebase.firestore();
+        const doc = await db.collection("sistema").doc("caderno_" + nomeUsuario).get();
+        if (doc.exists) { window.meuCaderno = doc.data().anotacoes || []; } 
+        else { window.meuCaderno = []; }
+        window.forcarAtualizacaoSino(); // Checa se tem alarmes antigos
+    } catch(e) { console.error(e); }
+}
+
+window.abrirMeuCaderno = function() {
+    document.getElementById('modal-caderno-prof').style.display = 'flex';
+    document.getElementById('dropdown-notificacoes').style.display = 'none'; 
+    renderizarCadernoProf();
+}
+
+window.renderizarCadernoProf = function() {
+    const filtro = document.getElementById('filtro-categoria-caderno').value;
+    const lista = document.getElementById('lista-caderno-prof');
+    lista.innerHTML = "";
+    
+    let filtradas = window.meuCaderno;
+    if (filtro) filtradas = filtradas.filter(n => n.categoria === filtro);
+    
+    // Ordem: Pendentes no topo, Concluídas embaixo
+    filtradas.sort((a,b) => (a.concluido === b.concluido) ? b.id - a.id : (a.concluido ? 1 : -1));
+
+    if (filtradas.length === 0) {
+        lista.innerHTML = "<p style='text-align:center; color:#999; font-size: 13px; margin-top: 20px;'>Nenhuma anotação encontrada.</p>";
+        return;
+    }
+
+    filtradas.forEach(n => {
+        const opacity = n.concluido ? "0.6" : "1";
+        const textDec = n.concluido ? "line-through" : "none";
+        const dataFormatada = new Date(n.id).toLocaleDateString('pt-BR');
+        const dataLemStr = n.dataLembrete ? `<br><b style="color:#d35400;">⏰ Lembrete: ${n.dataLembrete.split('-').reverse().join('/')}</b>` : "";
+        const alvoStr = n.contexto !== 'Geral' && n.alvo ? ` | 🎯 ${n.contexto}: ${n.alvo}` : "";
+        
+        lista.innerHTML += `
+            <div style="background: white; border: 1px solid var(--cor-borda); border-left: 4px solid var(--cor-primaria); border-radius: 4px; padding: 10px; margin-bottom: 10px; opacity: ${opacity}; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+                    <span style="font-size: 11px; color: #666; font-weight: bold;">[${n.categoria}] ${dataFormatada} ${alvoStr}</span>
+                    <div style="flex-shrink: 0;">
+                        <button onclick="alternarStatusCaderno(${n.id})" title="Marcar como Concluído/Pendente" style="background:none; border:none; cursor:pointer; font-size: 14px;">${n.concluido ? '✅' : '⬜'}</button>
+                        <button onclick="excluirItemCaderno(${n.id})" title="Excluir Definitivamente" style="background:none; border:none; cursor:pointer; font-size: 14px; opacity: 0.7;">🗑️</button>
+                    </div>
+                </div>
+                <div style="font-size: 13px; color: #333; text-decoration: ${textDec}; white-space: pre-wrap;">${n.texto}</div>
+                <div style="font-size: 11px; margin-top: 5px;">${dataLemStr}</div>
+            </div>
+        `;
+    });
+}
+
+document.getElementById('btn-salvar-caderno').addEventListener('click', async () => {
+    const cat = document.getElementById('caderno-nova-categoria').value;
+    const ctx = document.getElementById('caderno-novo-contexto').value;
+    const alvo = document.getElementById('caderno-novo-alvo').value.trim();
+    const dataLem = document.getElementById('caderno-nova-data').value;
+    const texto = document.getElementById('caderno-novo-texto').value.trim();
+
+    if (texto === "") return await sysAlert("A anotação não pode estar vazia.", "Aviso");
+    if (ctx !== 'Geral' && alvo === "") return await sysAlert(`Por favor, especifique qual ${ctx.toLowerCase()} é o alvo desta anotação.`, "Aviso");
+
+    const nova = { id: Date.now(), categoria: cat, contexto: ctx, alvo: alvo, dataLembrete: dataLem, texto: texto, concluido: false };
+
+    window.meuCaderno.unshift(nova); 
+    
+    document.getElementById('caderno-novo-texto').value = "";
+    document.getElementById('caderno-nova-data').value = "";
+    document.getElementById('caderno-novo-alvo').value = "";
+    
+    renderizarCadernoProf();
+    await salvarCadernoNuvem();
+    window.forcarAtualizacaoSino(); 
+});
+
+window.alternarStatusCaderno = async function(id) {
+    const item = window.meuCaderno.find(n => n.id === id);
+    if(item) {
+        item.concluido = !item.concluido;
+        renderizarCadernoProf();
+        await salvarCadernoNuvem();
+        window.forcarAtualizacaoSino(); // Se concluir, remove do sino
+    }
+}
+
+window.excluirItemCaderno = async function(id) {
+    if(await sysConfirm("Apagar esta anotação do seu caderno pessoal?", "Excluir")) {
+        window.meuCaderno = window.meuCaderno.filter(n => n.id !== id);
+        renderizarCadernoProf();
+        await salvarCadernoNuvem();
+        window.forcarAtualizacaoSino();
+    }
+}
+
+async function salvarCadernoNuvem() {
+    const btn = document.getElementById('btn-salvar-caderno');
+    const oldText = btn.innerText;
+    btn.innerText = "⏳ Salvando..."; btn.disabled = true;
+    try {
+        const db = firebase.firestore();
+        const nomeUsuario = auth.currentUser.email.trim().toLowerCase().split('@')[0];
+        await db.collection("sistema").doc("caderno_" + nomeUsuario).set({ anotacoes: window.meuCaderno });
+    } catch(e) {
+        console.error(e);
+        await sysAlert("Erro ao salvar o caderno na nuvem.");
+    }
+    btn.innerText = oldText; btn.disabled = false;
+}
