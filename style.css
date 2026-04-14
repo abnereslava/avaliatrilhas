@@ -71,7 +71,25 @@ tr:hover td:first-child { background-color: #f9f9f9; }
 .btn-visibilidade:hover { background-color: #e2e8f0; }
 
 .cabecalho-hab { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-.texto-hab { font-size: 11px; font-weight: normal; color: #555; display: block; border-top: 1px solid var(--cor-borda); padding-top: 6px; margin-top: 4px; line-height: 1.3; white-space: normal; }
+
+.texto-hab { 
+    font-size: 11px; 
+    font-weight: normal; 
+    color: #555; 
+    border-top: 1px solid var(--cor-borda); 
+    padding-top: 6px; 
+    margin-top: 4px; 
+    line-height: 1.3; 
+    
+    /* NOVO: Limitador inteligente de 3 linhas */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3; /* <--- Adicionada a propriedade padrão para remover o aviso */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
 
 /* MODAIS E ABAS */
 .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center; z-index: 1000; }
