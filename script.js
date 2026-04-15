@@ -955,7 +955,7 @@ window.abrirDossieAluno = async function(idAluno) {
         for (let i = ocorrencias.length - 1; i >= 0; i--) {
             const nota = ocorrencias[i];
             html += `<div class="bloco-registro-dossie" style="background: white; border-left: 4px solid var(--cor-borda); padding: 10px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative;">
-                        <button class="btn-ocultar-print no-print" onclick="this.parentElement.classList.toggle('oculto-impressao'); this.innerText = this.parentElement.classList.contains('oculto-impressao') ? '👁️ Revelar na impressão' : '🙈 Esconder na impressão';" title="Esconder isso ao imprimir a ficha">👁️ Imprimir</button>
+                        <button class="btn-ocultar-print no-print" onclick="this.parentElement.classList.toggle('oculto-impressao'); this.innerText = this.parentElement.classList.contains('oculto-impressao') ? '👁️ Revelar na impressão' : '🙈 Esconder na impressão';" title="Esconder isso ao imprimir a ficha">🙈 Esconder na impressão</button>
                         <p style="font-size: 12px; color: #666; margin: 0 0 5px 0; padding-right: 70px;">📅 <b>${nota.data}</b> | 📍 ${nota.disciplina}</p>
                         <p style="font-size: 14px; margin: 0; white-space: pre-wrap; color: #333;">${nota.texto}</p>
                      </div>`;
