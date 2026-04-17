@@ -51,12 +51,99 @@
     </header>
 
     <nav class="menu-visoes container">
-        <button id="btn-visao-tabela" class="visao-ativa">📝 Lançar Notas</button>
-        <button id="btn-visao-graficos">📊 Relatórios de Turma</button>
-        <button id="btn-visao-logs">📜 Log de Atividades</button>
+        <button id="btn-visao-tabela" class="visao-ativa" onclick="mudarAbaPrincipal('tela-tabela', this.id)">📝 Lançar Notas</button>
+        <button id="btn-visao-pesquisa" onclick="mudarAbaPrincipal('tela-pesquisa', this.id)">👨‍🎓 Gerenciar Estudantes</button>
+        <button id="btn-visao-habilidades" onclick="mudarAbaPrincipal('tela-habilidades', this.id)">🎯 Gerenciar Habilidades</button>
+        <button id="btn-visao-graficos" onclick="mudarAbaPrincipal('tela-graficos', this.id)">📊 Gerar Gráficos</button>
+        <button id="btn-visao-logs" onclick="mudarAbaPrincipal('tela-logs', this.id)">📜 Log de Atividades</button>
     </nav>
 
     <main class="container">
+        <div id="tela-pesquisa" style="display: none;">
+            <section class="area-dashboard">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--cor-primaria); padding-bottom: 10px; margin-bottom: 20px;">
+                    <h2 style="margin: 0; color: var(--cor-primaria);">👨‍🎓 Diretório de Estudantes</h2>
+                </div>
+
+                <div class="acoes-diretorio" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <button class="btn-primario" onclick="abrirModalNovoEstudante()" style="background-color: #0056B3;">➕ Novo Estudante</button>
+                    <button class="btn-secundario" onclick="sysAlert('Esta função será implementada em breve.', 'Em Construção')">🏫 Ensalamento</button>
+                    <button class="btn-secundario" onclick="sysAlert('Esta função será implementada em breve.', 'Em Construção')">📋 Lista de Chamada</button>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <input type="text" id="input-pesquisa-aluno" class="input-login" placeholder="Digite o nome do educando para buscar..." style="width: 100%; font-size: 16px; padding: 12px; border-radius: 8px; border: 2px solid var(--cor-primaria);">
+                </div>
+
+                <div id="lista-resultados-pesquisa">
+                    <p style="text-align: center; color: #999; padding: 20px;">Carregando diretório de estudantes...</p>
+                </div>
+
+            </section>
+        </div>
+
+        <div id="tela-habilidades" style="display: none;">
+            <section class="area-dashboard">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--cor-primaria); padding-bottom: 10px; margin-bottom: 20px;">
+                    <h2 style="margin: 0; color: var(--cor-primaria);">🎯 Gestão de Habilidades por Disciplina</h2>
+                </div>
+
+                <div class="modal-tabs" style="margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
+                    <button id="tab-gestao-add" class="btn-primario" onclick="document.getElementById('area-hab-add').style.display='flex'; document.getElementById('area-hab-edit').style.display='none'; this.className='btn-primario'; document.getElementById('tab-gestao-edit').className='btn-secundario';">➕ Inserir em Lote</button>
+                    <button id="tab-gestao-edit" class="btn-secundario" onclick="document.getElementById('area-hab-edit').style.display='flex'; document.getElementById('area-hab-add').style.display='none'; this.className='btn-primario'; document.getElementById('tab-gestao-add').className='btn-secundario';">📋 Gerenciar Existentes</button>
+                </div>
+                
+                <div id="area-hab-add" style="display: flex; flex-wrap: wrap; gap: 20px;">
+                    <div style="flex: 1; min-width: 300px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                        <h4 style="margin-top: 0; color: #333;">1. Onde aplicar?</h4>
+                        <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Selecione o Polo e Turno para listar as disciplinas.</p>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <select id="hab-lote-polo" class="input-login" style="flex: 1; margin-bottom: 0;"><option value="">Polo...</option></select>
+                            <select id="hab-lote-turno" class="input-login" style="flex: 1; margin-bottom: 0;" disabled><option value="">Turno...</option></select>
+                        </div>
+                        <div id="lista-checkbox-destinos-hab" class="checkbox-list" style="max-height: 280px; background: white; border-color: #0056b3;">
+                            <p style="text-align: center; color: #999; font-size: 12px; margin-top: 10px;">Aguardando seleção...</p>
+                        </div>
+                    </div>
+
+                    <div style="flex: 1.5; min-width: 300px; background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                        <h4 style="margin-top: 0; color: #0056b3;">2. Definir Habilidades e Validade</h4>
+                        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                            <div style="flex: 1;"><label style="font-size: 12px; font-weight: bold;">Início:</label><select id="hab-lote-mes-inicio" class="input-login" style="margin-bottom: 0;"></select></div>
+                            <div style="flex: 1;"><label style="font-size: 12px; font-weight: bold;">Expiração:</label><select id="hab-lote-mes-fim" class="input-login" style="margin-bottom: 0;"></select></div>
+                        </div>
+                        <label style="font-size: 12px; font-weight: bold;">Lista (Cole uma por linha):</label>
+                        <textarea id="hab-lote-texto" class="input-login" placeholder="Ex:&#10;Identificar a ideia central.&#10;Resolver equações matemáticas." style="height: 180px; resize: vertical; margin-bottom: 15px; font-family: monospace; font-size: 13px;"></textarea>
+                        <button id="btn-salvar-hab-lote" class="btn-primario" style="width: 100%; padding: 12px; font-size: 15px; background-color: #28a745; border: none;">🚀 Distribuir e Salvar no Banco</button>
+                        <p id="status-salvamento-hab" style="text-align: center; font-size: 13px; color: #666; margin-top: 10px; display: none;"></p>
+                    </div>
+                </div>
+
+                <div id="area-hab-edit" style="display: none; flex-wrap: wrap; gap: 20px;">
+                    <div style="flex: 1; min-width: 300px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                        <h4 style="margin-top: 0; color: #333;">1. Buscar Disciplina</h4>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <select id="hab-edit-polo" class="input-login" style="flex: 1; margin-bottom: 0;"><option value="">Polo...</option></select>
+                            <select id="hab-edit-turno" class="input-login" style="flex: 1; margin-bottom: 0;" disabled><option value="">Turno...</option></select>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <select id="hab-edit-turma" class="input-login" style="flex: 1; margin-bottom: 0;" disabled><option value="">Turma...</option></select>
+                            <select id="hab-edit-disciplina" class="input-login" style="flex: 1; margin-bottom: 0;" disabled><option value="">Disciplina...</option></select>
+                        </div>
+                        <button id="btn-buscar-habs-existentes" class="btn-primario" style="width: 100%; margin-top: 10px;" disabled>🔍 Buscar Habilidades</button>
+                    </div>
+
+                    <div style="flex: 2; min-width: 400px; background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                        <h4 style="margin-top: 0; color: #0056b3;">2. Habilidades Cadastradas</h4>
+                        <div id="lista-habs-existentes" style="max-height: 350px; overflow-y: auto; padding-right: 5px;">
+                            <p style="text-align: center; color: #999; padding: 20px;">Use os filtros ao lado para buscar as habilidades de uma disciplina.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
         <div id="tela-tabela">
             <section class="painel-filtros">
                 <div class="grupo-filtro"><label>Polo</label><select id="filtro-polo"><option value="">Selecione...</option></select></div>
@@ -69,8 +156,6 @@
             <section class="painel-acoes" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <div style="display: flex; gap: 10px;">
                     <button id="btn-abrir-opcoes-avancadas" class="btn-secundario" style="background-color: #6c757d; color: white; border: none; display: none;">⚙️ Opções Avançadas</button>
-                    <button id="btn-abrir-modal-alu" class="btn-secundario" disabled>⚙️ Gerenciar Estudantes</button>
-                    <button id="btn-abrir-modal-hab" class="btn-secundario" disabled>⚙️ Gerenciar Habilidades</button>
                 </div>
                 <div style="display: flex; gap: 10px;">
                     <button id="btn-toggle-mes" class="btn-alerta" disabled>🔒 Fechar Mês</button>
@@ -80,11 +165,12 @@
 
             <section class="area-tabela">
                 <div id="painel-legenda" class="legenda-cores" style="display: none;">
-                    <span class="item-legenda"><span class="bolinha cor-0"></span>0 - Não aplicável</span>
-                    <span class="item-legenda"><span class="bolinha cor-1"></span>1 - Não desenvolvida</span>
-                    <span class="item-legenda"><span class="bolinha cor-2"></span>2 - Em desenvolvimento</span>
-                    <span class="item-legenda"><span class="bolinha cor-3"></span>3 - Em construção</span>
+                    <span class="item-legenda"><span class="bolinha cor-0"></span>0 - Não Aplicável</span>
+                    <span class="item-legenda"><span class="bolinha cor-1"></span>1 - Não Desenvolvida</span>
+                    <span class="item-legenda"><span class="bolinha cor-2"></span>2 - Em Desenvolvimento</span>
+                    <span class="item-legenda"><span class="bolinha cor-3"></span>3 - Em consolidação</span>
                     <span class="item-legenda"><span class="bolinha cor-4"></span>4 - Consolidada</span>
+                    <span class="item-legenda"><span class="bolinha cor-5"></span>5 - Em destaque</span>
                 </div>
                 <div class="tabela-scroll">
                     <table>
@@ -98,7 +184,7 @@
         <div id="tela-graficos" style="display: none;">
             <section class="area-dashboard">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--cor-primaria); padding-bottom: 10px; margin-bottom: 20px;">
-                    <h2 style="margin: 0; color: var(--cor-primaria);">📈 Relatórios e Evolução</h2>
+                    <h2 style="margin: 0; color: var(--cor-primaria);">📈 Relatórios e evolução</h2>
                 </div>
                 <div class="painel-filtros" style="background-color: #f8f9fa; border: 1px solid var(--cor-borda); display: flex; flex-direction: column; gap: 20px;">
                     <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
@@ -246,7 +332,7 @@
 
     <div id="modal-gerenciar-hab" class="modal-overlay">
         <div class="modal-box">
-            <h2>⚙️ Gerenciar Habilidades</h2>
+            <h2>⚙️ Gerenciar Habilidades (Legado)</h2>
             <div class="modal-tabs">
                 <button id="tab-hab-add" class="tab-btn ativa" onclick="mudarAbaHab('add')">+ Adicionar</button>
                 <button id="tab-hab-copiar" class="tab-btn" onclick="mudarAbaHab('copiar')">🔄 Copiar</button>
@@ -351,6 +437,37 @@
             <div class="modal-acoes" style="justify-content: center;">
                 <button id="sys-modal-btn-cancel" class="btn-secundario" style="display: none;">Cancelar</button>
                 <button id="sys-modal-btn-ok" class="btn-primario">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-escopo-hab" class="modal-overlay" style="display: none; z-index: 100003;">
+        <div class="modal-box" style="max-width: 500px;">
+            <h2 id="titulo-modal-escopo-hab" style="margin-top: 0; color: #0056b3;">🔄 Alcance da Alteração</h2>
+            <p style="font-size: 13px; color: #555; margin-bottom: 15px;">Esta habilidade pode ter sido enviada para outras turmas anteriormente. Onde você deseja aplicar essa modificação?</p>
+
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                <label style="background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                    <input type="radio" name="escopo-hab" value="turma" checked>
+                    <span style="font-size: 14px;">Apenas nesta turma atual</span>
+                </label>
+                <label style="background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                    <input type="radio" name="escopo-hab" value="turnos">
+                    <span style="font-size: 14px;">Nesta turma (Nos dois turnos, se houver)</span>
+                </label>
+                <label style="background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                    <input type="radio" name="escopo-hab" value="polo">
+                    <span style="font-size: 14px;">Em todas as turmas deste Polo</span>
+                </label>
+                <label style="background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                    <input type="radio" name="escopo-hab" value="global">
+                    <span style="font-size: 14px;">Global: Em todas as ocorrências do sistema</span>
+                </label>
+            </div>
+
+            <div class="modal-acoes">
+                <button class="btn-secundario" onclick="fecharModalEscopoHab()">Cancelar</button>
+                <button class="btn-primario" onclick="executarOperacaoHab()" style="background-color: #28a745;">Confirmar Atualização</button>
             </div>
         </div>
     </div>
