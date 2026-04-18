@@ -69,37 +69,20 @@ window.sysPrompt = function(msg, defaultText = "", title = "Entrada Necessária"
     return new Promise((resolve) => {
         document.getElementById('sys-modal-title').innerText = title;
         document.getElementById('sys-modal-msg').innerText = msg;
-        
         const input = document.getElementById('sys-modal-input');
         const textarea = document.getElementById('sys-modal-textarea');
-        
-        if (isMultiline) {
-            input.style.display = 'none';
-            textarea.style.display = 'block';
-            textarea.value = defaultText;
-        } else {
-            textarea.style.display = 'none';
-            input.style.display = 'block';
-            input.value = defaultText;
-        }
-        
+        if (isMultiline) { input.style.display = 'none'; textarea.style.display = 'block'; textarea.value = defaultText; } 
+        else { textarea.style.display = 'none'; input.style.display = 'block'; input.value = defaultText; }
         document.getElementById('sys-modal-btn-cancel').style.display = 'block';
         const modal = document.getElementById('sys-modal-overlay');
         const btnOk = document.getElementById('sys-modal-btn-ok');
         const btnCancel = document.getElementById('sys-modal-btn-cancel');
         modal.style.display = 'flex';
-        
         if(isMultiline) textarea.focus(); else input.focus();
-        
-        const cleanUp = () => {
-            modal.style.display = 'none';
-            btnOk.removeEventListener('click', onOk);
-            btnCancel.removeEventListener('click', onCancel);
-        };
+        const cleanUp = () => { modal.style.display = 'none'; btnOk.removeEventListener('click', onOk); btnCancel.removeEventListener('click', onCancel); };
         const onOk = () => { cleanUp(); resolve(isMultiline ? textarea.value : input.value); };
         const onCancel = () => { cleanUp(); resolve(null); };
-        btnOk.addEventListener('click', onOk);
-        btnCancel.addEventListener('click', onCancel);
+        btnOk.addEventListener('click', onOk); btnCancel.addEventListener('click', onCancel);
     });
 };
 
@@ -147,38 +130,23 @@ auth.onAuthStateChanged(async (user) => {
     if (user) { 
         const emailTratado = user.email.trim().toLowerCase();
         const nomeUsuario = emailTratado.split('@')[0];
-        
-        if (spanUsuario) {
-            spanUsuario.innerHTML = `Você está logado como <b>${nomeUsuario}</b>`;
-            spanUsuario.style.display = 'inline-block';
-        }
+        if (spanUsuario) { spanUsuario.innerHTML = `Você está logado como <b>${nomeUsuario}</b>`; spanUsuario.style.display = 'inline-block'; }
         
         usuarioPermissoes = tabelaPermissoes[emailTratado];
-        
         if (!usuarioPermissoes) {
             usuarioPermissoes = { perfil: 'admin' };
             await sysAlert(`O e-mail "${emailTratado}" não está na lista de permissões. Acesso Admin liberado provisoriamente.`, "Aviso de Segurança");
         }
-        
         aplicarPermissoesDeInterface();
-        
         if (typeof iniciarOuvinteNotificacoes === 'function') iniciarOuvinteNotificacoes();
 
-        telaLogin.style.display = 'none'; 
-        btnSair.style.display = 'block'; 
+        telaLogin.style.display = 'none'; btnSair.style.display = 'block'; 
     } else { 
-        telaLogin.style.display = 'flex'; 
-        btnSair.style.display = 'none'; 
-        if (spanUsuario) spanUsuario.style.display = 'none';
-        
-        const sino = document.getElementById('container-sino');
-        const caderno = document.getElementById('btn-caderno-prof');
-        if (sino) sino.style.display = 'none';
-        if (caderno) caderno.style.display = 'none';
-        
+        telaLogin.style.display = 'flex'; btnSair.style.display = 'none'; if (spanUsuario) spanUsuario.style.display = 'none';
+        const sino = document.getElementById('container-sino'); const caderno = document.getElementById('btn-caderno-prof');
+        if (sino) sino.style.display = 'none'; if (caderno) caderno.style.display = 'none';
         if (typeof unsubscribeNotificacoes !== 'undefined' && unsubscribeNotificacoes) unsubscribeNotificacoes();
-        window.meuCaderno = []; 
-        usuarioPermissoes = null;
+        window.meuCaderno = []; usuarioPermissoes = null;
     }
 });
 
@@ -186,16 +154,16 @@ function aplicarPermissoesDeInterface() {
     const btnAvancado = document.getElementById('btn-abrir-opcoes-avancadas');
     const polosSelects = [
         document.getElementById('filtro-polo'), document.getElementById('dest-alu-copiar-polo'),
-        document.getElementById('dest-alu-mover-polo'), document.getElementById('dest-hab-polo')
+        document.getElementById('dest-alu-mover-polo'), document.getElementById('dest-hab-polo'),
+        document.getElementById('hab-edit-polo'), document.getElementById('hab-lote-polo'),
+        document.getElementById('grafico-polo')
     ];
 
     polosSelects.forEach(sel => { if(sel) sel.innerHTML = '<option value="">Selecione...</option>'; });
 
     if (!usuarioPermissoes || usuarioPermissoes.perfil === 'admin' || usuarioPermissoes.perfil === 'coordenacao') {
         if (btnAvancado) btnAvancado.style.display = usuarioPermissoes?.perfil === 'coordenacao' ? 'none' : 'inline-block';
-        polosSelects.forEach(sel => {
-            if(sel) { sel.appendChild(new Option("Polo 1", "polo1")); sel.appendChild(new Option("Polo 2", "polo2")); }
-        });
+        polosSelects.forEach(sel => { if(sel) { sel.appendChild(new Option("Polo 1", "polo1")); sel.appendChild(new Option("Polo 2", "polo2")); } });
     } 
     else if (usuarioPermissoes.perfil === 'professor') {
         if (btnAvancado) btnAvancado.style.display = 'none';
@@ -209,24 +177,17 @@ function aplicarPermissoesDeInterface() {
 }
 
 document.getElementById('btn-entrar').addEventListener('click', () => {
-    const email = document.getElementById('login-email').value;
-    const senha = document.getElementById('login-senha').value;
+    const email = document.getElementById('login-email').value; const senha = document.getElementById('login-senha').value;
     document.getElementById('btn-entrar').textContent = "Autenticando...";
     auth.signInWithEmailAndPassword(email, senha).then(() => {
-        document.getElementById('login-erro').style.display = 'none'; 
-        document.getElementById('btn-entrar').textContent = "Entrar no Sistema";
+        document.getElementById('login-erro').style.display = 'none'; document.getElementById('btn-entrar').textContent = "Entrar no Sistema";
     }).catch((error) => {
-        document.getElementById('login-erro').textContent = "E-mail ou senha incorretos."; 
-        document.getElementById('login-erro').style.display = 'block'; 
-        document.getElementById('btn-entrar').textContent = "Entrar no Sistema";
+        document.getElementById('login-erro').textContent = "E-mail ou senha incorretos."; document.getElementById('login-erro').style.display = 'block'; document.getElementById('btn-entrar').textContent = "Entrar no Sistema";
     });
 });
 
 document.getElementById('btn-sair').addEventListener('click', async () => {
-    if (temAlteracoesNaoSalvas) {
-        const confirmarSair = await sysConfirm("Existem alterações não salvas. Sair mesmo assim?", "Aviso");
-        if (!confirmarSair) return;
-    }
+    if (temAlteracoesNaoSalvas) { const confirmarSair = await sysConfirm("Existem alterações não salvas. Sair mesmo assim?", "Aviso"); if (!confirmarSair) return; }
     auth.signOut();
 });
 
@@ -252,20 +213,10 @@ const escola = {
     }
 };
 
-let bancoDeDados = {}; 
-let temAlteracoesNaoSalvas = false;
-window.logsPendentes = []; 
+let bancoDeDados = {}; let temAlteracoesNaoSalvas = false; window.logsPendentes = []; 
 
-function montarIDContextoTurma(polo, turno, turma) { 
-    if (!polo || !turno || !turma) return null; 
-    return `TURMA_${polo}_${turno}_${turma}`; 
-}
-
-function montarIDContextoDisciplina(turmaCtx, disciplina) { 
-    if (!turmaCtx || !disciplina) return null; 
-    return `DISC_${turmaCtx}_${disciplina}`; 
-}
-
+function montarIDContextoTurma(polo, turno, turma) { if (!polo || !turno || !turma) return null; return `TURMA_${polo}_${turno}_${turma}`; }
+function montarIDContextoDisciplina(turmaCtx, disciplina) { if (!turmaCtx || !disciplina) return null; return `DISC_${turmaCtx}_${disciplina}`; }
 function getContextosAtuais() {
     const ctxTurma = montarIDContextoTurma(document.getElementById('filtro-polo').value, document.getElementById('filtro-turno').value, document.getElementById('filtro-turma').value);
     const ctxDisc = montarIDContextoDisciplina(ctxTurma, document.getElementById('filtro-disciplina').value);
@@ -275,23 +226,11 @@ function getContextosAtuais() {
 // =========================================================
 // 5. LÓGICA DE FILTROS E GUARDIÃO
 // =========================================================
-let proximaAcao = null; 
-const modalAlerta = document.getElementById('modal-alerta-salvar');
+let proximaAcao = null; const modalAlerta = document.getElementById('modal-alerta-salvar');
 
-function tentarNavegar(acao) { 
-    if (temAlteracoesNaoSalvas) { proximaAcao = acao; modalAlerta.style.display = "flex"; } 
-    else { acao(); } 
-}
-
-document.getElementById('btn-alerta-descartar').addEventListener('click', () => { 
-    temAlteracoesNaoSalvas = false; window.logsPendentes = []; modalAlerta.style.display = "none"; if (proximaAcao) proximaAcao(); 
-});
-
-document.getElementById('btn-alerta-salvar').addEventListener('click', async () => { 
-    const sucesso = await window.salvarDadosNaNuvem(); 
-    modalAlerta.style.display = "none"; if (sucesso && proximaAcao) proximaAcao(); 
-});
-
+function tentarNavegar(acao) { if (temAlteracoesNaoSalvas) { proximaAcao = acao; modalAlerta.style.display = "flex"; } else { acao(); } }
+document.getElementById('btn-alerta-descartar').addEventListener('click', () => { temAlteracoesNaoSalvas = false; window.logsPendentes = []; modalAlerta.style.display = "none"; if (proximaAcao) proximaAcao(); });
+document.getElementById('btn-alerta-salvar').addEventListener('click', async () => { const sucesso = await window.salvarDadosNaNuvem(); modalAlerta.style.display = "none"; if (sucesso && proximaAcao) proximaAcao(); });
 window.addEventListener('beforeunload', function (e) { if (temAlteracoesNaoSalvas) { e.preventDefault(); e.returnValue = ''; } });
 
 function configurarCascataFiltros(prefixo, temDisciplina) {
@@ -301,49 +240,56 @@ function configurarCascataFiltros(prefixo, temDisciplina) {
 
     p.addEventListener('change', function() { 
         tentarNavegar(() => { 
-            tn.innerHTML = '<option value="">Turno...</option>'; tn.disabled = true; tm.innerHTML = '<option value="">Turma...</option>'; tm.disabled = true;
-            if (d) { d.innerHTML = '<option value="">Disciplina...</option>'; d.disabled = true; }
-            if (mes) { mes.selectedIndex = 0; mes.disabled = true; } 
-            if (!p.value) { carregarEAtualizarInterface(); return; } 
-            tn.appendChild(new Option("Manhã", "Manhã")); tn.appendChild(new Option("Tarde", "Tarde")); tn.disabled = false; carregarEAtualizarInterface(); 
+            if(tn) { tn.innerHTML = '<option value="">Turno...</option>'; tn.disabled = true; }
+            if(tm) { tm.innerHTML = '<option value="">Turma...</option>'; tm.disabled = true; }
+            if(d) { d.innerHTML = '<option value="">Disciplina...</option>'; d.disabled = true; }
+            if(mes) { mes.selectedIndex = 0; mes.disabled = true; } 
+            if(!p.value) { carregarEAtualizarInterface(); return; } 
+            if(tn) { tn.appendChild(new Option("Manhã", "Manhã")); tn.appendChild(new Option("Tarde", "Tarde")); tn.disabled = false; }
+            carregarEAtualizarInterface(); 
         }); 
     });
     
-    tn.addEventListener('change', function() { 
-        tentarNavegar(() => { 
-            tm.innerHTML = '<option value="">Turma...</option>'; tm.disabled = true;
-            if (d) { d.innerHTML = '<option value="">Disciplina...</option>'; d.disabled = true; }
-            if (mes) { mes.selectedIndex = 0; mes.disabled = true; }
-            const polo = p.value; const turno = tn.value; 
-            if (!turno) { carregarEAtualizarInterface(); return; } 
-            let turmasDoTurno = escola.polos[polo][turno];
-            if (usuarioPermissoes?.perfil === 'professor') {
-                const permitidas = Object.keys(usuarioPermissoes.acessos[polo]?.[turno] || {});
-                turmasDoTurno = turmasDoTurno.filter(t => permitidas.includes(t));
-            }
-            turmasDoTurno.forEach(t => tm.appendChild(new Option(t, t))); tm.disabled = false; carregarEAtualizarInterface(); 
-        }); 
-    });
+    if(tn) {
+        tn.addEventListener('change', function() { 
+            tentarNavegar(() => { 
+                if(tm) { tm.innerHTML = '<option value="">Turma...</option>'; tm.disabled = true; }
+                if(d) { d.innerHTML = '<option value="">Disciplina...</option>'; d.disabled = true; }
+                if(mes) { mes.selectedIndex = 0; mes.disabled = true; }
+                const polo = p.value; const turno = tn.value; 
+                if (!turno) { carregarEAtualizarInterface(); return; } 
+                let turmasDoTurno = escola.polos[polo][turno];
+                if (usuarioPermissoes?.perfil === 'professor') {
+                    const permitidas = Object.keys(usuarioPermissoes.acessos[polo]?.[turno] || {});
+                    turmasDoTurno = turmasDoTurno.filter(t => permitidas.includes(t));
+                }
+                if(tm) { turmasDoTurno.forEach(t => tm.appendChild(new Option(t, t))); tm.disabled = false; }
+                carregarEAtualizarInterface(); 
+            }); 
+        });
+    }
     
-    tm.addEventListener('change', function() { 
-        tentarNavegar(() => { 
-            if (d) { d.innerHTML = '<option value="">Disciplina...</option>'; d.disabled = true; }
-            if (mes) { mes.selectedIndex = 0; mes.disabled = true; }
-            if (!d) { carregarEAtualizarInterface(); return; } 
-            const polo = p.value; const turno = tn.value; const turma = tm.value; 
-            if (!turma) { carregarEAtualizarInterface(); return; } 
-            let discps = polo === 'polo1' ? escola.disciplinas.polo1 : [...escola.disciplinas.polo2Base]; 
-            if (polo === 'polo2') { 
-                if (turma.includes('Infantil') || turma.includes('1º Ano')) discps.push("Psicomotricidade"); else discps.push("Jogos de Oposição"); 
-                discps.sort(); 
-            } 
-            if (usuarioPermissoes?.perfil === 'professor') {
-                const permitidas = usuarioPermissoes.acessos[polo]?.[turno]?.[turma] || [];
-                discps = discps.filter(disciplina => permitidas.includes(disciplina));
-            }
-            discps.forEach(x => d.appendChild(new Option(x, x))); d.disabled = false; carregarEAtualizarInterface(); 
-        }); 
-    });
+    if(tm) {
+        tm.addEventListener('change', function() { 
+            tentarNavegar(() => { 
+                if(d) { d.innerHTML = '<option value="">Disciplina...</option>'; d.disabled = true; }
+                if(mes) { mes.selectedIndex = 0; mes.disabled = true; }
+                if(!d) { carregarEAtualizarInterface(); return; } 
+                const polo = p.value; const turno = tn.value; const turma = tm.value; 
+                if (!turma) { carregarEAtualizarInterface(); return; } 
+                let discps = polo === 'polo1' ? escola.disciplinas.polo1 : [...escola.disciplinas.polo2Base]; 
+                if (polo === 'polo2') { 
+                    if (turma.includes('Infantil') || turma.includes('1º Ano')) discps.push("Psicomotricidade"); else discps.push("Jogos de Oposição"); 
+                    discps.sort(); 
+                } 
+                if (usuarioPermissoes?.perfil === 'professor') {
+                    const permitidas = usuarioPermissoes.acessos[polo]?.[turno]?.[turma] || [];
+                    discps = discps.filter(disciplina => permitidas.includes(disciplina));
+                }
+                discps.forEach(x => d.appendChild(new Option(x, x))); d.disabled = false; carregarEAtualizarInterface(); 
+            }); 
+        });
+    }
 
     if (d) { d.addEventListener('change', () => { tentarNavegar(() => { if (mes) { if (d.value) { mes.disabled = false; } else { mes.selectedIndex = 0; mes.disabled = true; } } carregarEAtualizarInterface(); }); }); }
 }
@@ -358,7 +304,7 @@ function configurarCascataDestino(prefixo, temDisciplina) {
         if(tm) { tm.innerHTML = '<option value="">Turma...</option>'; tm.disabled = true; }
         if(d) { d.innerHTML = '<option value="">Disciplina...</option>'; d.disabled = true; }
         if (!p.value) return;
-        tn.appendChild(new Option("Manhã", "Manhã")); tn.appendChild(new Option("Tarde", "Tarde")); tn.disabled = false;
+        if(tn) { tn.appendChild(new Option("Manhã", "Manhã")); tn.appendChild(new Option("Tarde", "Tarde")); tn.disabled = false; }
     });
 
     if(tn) { tn.addEventListener('change', function() {
@@ -370,7 +316,7 @@ function configurarCascataDestino(prefixo, temDisciplina) {
             const permitidas = Object.keys(usuarioPermissoes.acessos[polo]?.[turno] || {});
             turmasDoTurno = turmasDoTurno.filter(t => permitidas.includes(t));
         }
-        turmasDoTurno.forEach(t => tm.appendChild(new Option(t, t))); tm.disabled = false;
+        if(tm) { turmasDoTurno.forEach(t => tm.appendChild(new Option(t, t))); tm.disabled = false; }
     }); }
 
     if(tm) { tm.addEventListener('change', function() {
@@ -409,12 +355,22 @@ function carregarEAtualizarInterface() {
     }
 }
 
-configurarCascataFiltros('filtro', true); configurarCascataDestino('dest-hab', true); 
-configurarCascataDestino('dest-alu-copiar', false); configurarCascataDestino('dest-alu-mover', false);
+configurarCascataFiltros('filtro', true); 
+configurarCascataDestino('dest-hab', true); 
+configurarCascataDestino('dest-alu-copiar', false); 
+configurarCascataDestino('dest-alu-mover', false);
+configurarCascataDestino('hab-edit', true); 
+configurarCascataDestino('grafico', true);  
+
+const domEditDisc = document.getElementById('hab-edit-disciplina');
+const domBtnBusca = document.getElementById('btn-buscar-habs-existentes');
+if (domEditDisc && domBtnBusca) { domEditDisc.addEventListener('change', () => { domBtnBusca.disabled = !domEditDisc.value; }); }
 
 const selMes = document.getElementById('filtro-mes');
-escola.meses.forEach(m => { let opt = document.createElement('option'); opt.value = m.id; opt.textContent = m.nome; opt.dataset.ordem = m.ordem; selMes.appendChild(opt); });
-selMes.addEventListener('change', () => tentarNavegar(carregarEAtualizarInterface));
+if(selMes) {
+    escola.meses.forEach(m => { let opt = document.createElement('option'); opt.value = m.id; opt.textContent = m.nome; opt.dataset.ordem = m.ordem; selMes.appendChild(opt); });
+    selMes.addEventListener('change', () => tentarNavegar(carregarEAtualizarInterface));
+}
 
 // =========================================================
 // 6. NUVEM E CARREGAMENTO
@@ -423,34 +379,27 @@ async function carregarDadosDaNuvem(ctxTurma, ctxDisc) {
     const cab = document.getElementById('cabecalho-tabela'); const corpo = document.getElementById('corpo-tabela');
     cab.innerHTML = "<tr><th>⏳ A carregar dados da nuvem...</th></tr>"; corpo.innerHTML = "";
     try {
-        const docTurma = await db.collection("turmas").doc(ctxTurma).get(); 
-        bancoDeDados[ctxTurma] = docTurma.exists ? docTurma.data() : { alunos: [] };
-        const docDisc = await db.collection("disciplinas").doc(ctxDisc).get(); 
-        bancoDeDados[ctxDisc] = docDisc.exists ? docDisc.data() : { habilidades: [], mesesFechados: {}, notas: {} };
-        temAlteracoesNaoSalvas = false; window.logsPendentes = []; 
-        renderizarTabela(); verificarEstadoDoMes(); 
+        const docTurma = await db.collection("turmas").doc(ctxTurma).get(); bancoDeDados[ctxTurma] = docTurma.exists ? docTurma.data() : { alunos: [] };
+        const docDisc = await db.collection("disciplinas").doc(ctxDisc).get(); bancoDeDados[ctxDisc] = docDisc.exists ? docDisc.data() : { habilidades: [], mesesFechados: {}, notas: {} };
+        temAlteracoesNaoSalvas = false; window.logsPendentes = []; renderizarTabela(); verificarEstadoDoMes(); 
     } catch (error) { cab.innerHTML = "<tr><th style='color: red;'>❌ Erro de conexão.</th></tr>"; }
 }
 
 window.salvarDadosNaNuvem = async function() {
-    const { ctxTurma, ctxDisc } = getContextosAtuais(); 
-    const btnSalvar = document.getElementById('btn-salvar');
+    const { ctxTurma, ctxDisc } = getContextosAtuais(); const btnSalvar = document.getElementById('btn-salvar');
     btnSalvar.textContent = "⏳ A Salvar..."; btnSalvar.disabled = true;
     try {
         if (ctxTurma) await db.collection("turmas").doc(ctxTurma).set(bancoDeDados[ctxTurma]);
         if (ctxDisc) await db.collection("disciplinas").doc(ctxDisc).set(bancoDeDados[ctxDisc]);
         if(typeof registrarLog === 'function') {
-            if (window.logsPendentes && window.logsPendentes.length > 0) {
-                const acoesUnicas = [...new Set(window.logsPendentes)]; await registrarLog(`Alterações Salvas: ${acoesUnicas.join(" | ")}`); window.logsPendentes = []; 
-            } else { await registrarLog(`Salvou o progresso de notas.`); }
+            if (window.logsPendentes && window.logsPendentes.length > 0) { const acoesUnicas = [...new Set(window.logsPendentes)]; await registrarLog(`Alterações Salvas: ${acoesUnicas.join(" | ")}`); window.logsPendentes = []; } 
+            else { await registrarLog(`Salvou o progresso de notas.`); }
         }
         temAlteracoesNaoSalvas = false; await sysAlert("✅ Notas e dados salvos na nuvem com sucesso!", "Sucesso"); return true; 
-    } catch (e) { 
-        await sysAlert("❌ Erro ao salvar. Verifique a sua conexão.", "Erro"); return false; 
-    } finally { btnSalvar.innerHTML = "💾 Salvar Notas"; btnSalvar.disabled = false; }
+    } catch (e) { await sysAlert("❌ Erro ao salvar. Verifique a sua conexão.", "Erro"); return false; } finally { btnSalvar.innerHTML = "💾 Salvar Notas"; btnSalvar.disabled = false; }
 }
 
-document.getElementById('btn-salvar').addEventListener('click', salvarDadosNaNuvem);
+if(document.getElementById('btn-salvar')) document.getElementById('btn-salvar').addEventListener('click', salvarDadosNaNuvem);
 
 // =========================================================
 // 7. OPÇÕES AVANÇADAS (BACKUP E RESET)
@@ -464,29 +413,24 @@ if (document.getElementById('btn-abrir-opcoes-avancadas')) {
         document.getElementById('avancado-senha').value = ""; document.getElementById('avancado-palavra').value = ""; document.getElementById('seletor-acao-avancada').value = "";
         document.getElementById('btn-confirmar-acao-avancada').disabled = true; document.getElementById('area-upload-file').style.display = 'none'; fezBackupSeguranca = false; modalAvancado.style.display = 'flex'; 
     });
-
     document.getElementById('btn-fechar-opcoes').addEventListener('click', () => { modalAvancado.style.display = 'none'; });
-
     document.getElementById('btn-executar-backup').addEventListener('click', () => { 
         const dadosConvertidos = JSON.stringify(bancoDeDados, null, 2); const blob = new Blob([dadosConvertidos], { type: "application/json" }); 
         const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `backup_AvaliaTrilhas_${new Date().toISOString().split('T')[0]}.json`; link.click(); 
         if(typeof registrarLog === 'function') registrarLog("Fez download de um backup do sistema."); fezBackupSeguranca = true; document.getElementById('area-restrita-avancada').style.display = 'block'; 
     });
-
     document.getElementById('seletor-acao-avancada').addEventListener('change', function() {
         const areaUpload = document.getElementById('area-upload-file'); const btn = document.getElementById('btn-confirmar-acao-avancada');
         if (this.value === "upload") { areaUpload.style.display = 'block'; btn.textContent = "🔄 Restaurar Backup na Nuvem"; btn.disabled = false; } 
         else if (this.value === "reset") { areaUpload.style.display = 'none'; btn.textContent = "☢️ DELETAR TODOS OS DADOS DA ESCOLA"; btn.disabled = false; } 
         else { areaUpload.style.display = 'none'; btn.disabled = true; }
     });
-
     document.getElementById('btn-confirmar-acao-avancada').addEventListener('click', async () => {
         const acao = document.getElementById('seletor-acao-avancada').value; const email = document.getElementById('avancado-email').value; const senha = document.getElementById('avancado-senha').value; const palavra = document.getElementById('avancado-palavra').value;
         if (!fezBackupSeguranca) return await sysAlert("Você precisa baixar o backup antes de prosseguir!", "Aviso");
         if (palavra !== "CONFIRMAR") return await sysAlert("A palavra de segurança deve ser CONFIRMAR exata e em maiúsculo.", "Erro");
         if (!email || !senha) return await sysAlert("Preencha o e-mail e a senha.", "Erro");
         const btn = document.getElementById('btn-confirmar-acao-avancada'); btn.textContent = "⏳ Autenticando e Processando..."; btn.disabled = true;
-
         try {
             await auth.signInWithEmailAndPassword(email, senha);
             if (acao === "reset") {
@@ -518,8 +462,7 @@ let alunoAnotacaoAtual = null; window.anotacaoEditIndex = null;
 
 window.abrirModalAnotacoes = function(idAluno) {
     const { ctxTurma } = getContextosAtuais(); alunoAnotacaoAtual = bancoDeDados[ctxTurma].alunos.find(a => a.id === idAluno); if (!alunoAnotacaoAtual) return;
-    document.getElementById('titulo-modal-anotacoes').innerText = `Caderno de: ${alunoAnotacaoAtual.nome}`;
-    document.getElementById('texto-nova-anotacao').value = ""; document.getElementById('tipo-nova-anotacao').value = "Anotação";
+    document.getElementById('titulo-modal-anotacoes').innerText = `Caderno de: ${alunoAnotacaoAtual.nome}`; document.getElementById('texto-nova-anotacao').value = ""; document.getElementById('tipo-nova-anotacao').value = "Anotação";
     atualizarListaAnotacoesVisuais(); document.getElementById('modal-anotacoes-aluno').style.display = 'flex';
 }
 
@@ -528,19 +471,8 @@ function atualizarListaAnotacoesVisuais() {
     if (!alunoAnotacaoAtual.anotacoes || alunoAnotacaoAtual.anotacoes.length === 0) { container.innerHTML = "<p style='color: #666; font-size: 13px; text-align: center;'>Nenhum registro para este educando ainda.</p>"; return; }
     let html = "";
     for (let i = alunoAnotacaoAtual.anotacoes.length - 1; i >= 0; i--) {
-        const nota = alunoAnotacaoAtual.anotacoes[i]; const tipoNota = nota.tipo || "Anotação"; 
-        const isOcorrencia = tipoNota === "Ocorrência"; const corBorda = isOcorrencia ? "#dc3545" : "var(--cor-primaria)";
-        const txtBadge = isOcorrencia ? `<b style="color:#dc3545; font-size: 10px; border: 1px solid #dc3545; padding: 1px 4px; border-radius: 3px; margin-left: 5px;">OCORRÊNCIA</b>` : "";
-        html += `
-            <div class="item-anotacao" style="border-left-color: ${corBorda};">
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 3px; margin-bottom: 5px;">
-                    <span class="item-anotacao-header" style="border: none; margin: 0; padding: 0;">📅 ${nota.data} | 📍 ${nota.disciplina} ${txtBadge}</span>
-                    <div>
-                        <button class="btn-acao-nota" onclick="editarAnotacao(${i})" title="Editar (Data, Disciplina, Tipo e Texto)">✏️</button>
-                        <button class="btn-acao-nota" onclick="excluirAnotacao(${i})" title="Excluir este registro">🗑️</button>
-                    </div>
-                </div><div style="white-space: pre-wrap;">${nota.texto}</div>
-            </div>`;
+        const nota = alunoAnotacaoAtual.anotacoes[i]; const tipoNota = nota.tipo || "Anotação"; const isOcorrencia = tipoNota === "Ocorrência"; const corBorda = isOcorrencia ? "#dc3545" : "var(--cor-primaria)"; const txtBadge = isOcorrencia ? `<b style="color:#dc3545; font-size: 10px; border: 1px solid #dc3545; padding: 1px 4px; border-radius: 3px; margin-left: 5px;">OCORRÊNCIA</b>` : "";
+        html += `<div class="item-anotacao" style="border-left-color: ${corBorda};"><div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 3px; margin-bottom: 5px;"><span class="item-anotacao-header" style="border: none; margin: 0; padding: 0;">📅 ${nota.data} | 📍 ${nota.disciplina} ${txtBadge}</span><div><button class="btn-acao-nota" onclick="editarAnotacao(${i})" title="Editar (Data, Disciplina, Tipo e Texto)">✏️</button><button class="btn-acao-nota" onclick="excluirAnotacao(${i})" title="Excluir este registro">🗑️</button></div></div><div style="white-space: pre-wrap;">${nota.texto}</div></div>`;
     }
     container.innerHTML = html;
 }
@@ -558,13 +490,11 @@ window.editarAnotacao = function(indexReal) {
     document.getElementById('modal-editar-anotacao').style.display = 'flex';
 }
 
-document.getElementById('btn-cancelar-edicao-anotacao').addEventListener('click', () => { document.getElementById('modal-editar-anotacao').style.display = 'none'; });
-
-document.getElementById('btn-salvar-edicao-anotacao').addEventListener('click', async () => {
+if(document.getElementById('btn-cancelar-edicao-anotacao')) document.getElementById('btn-cancelar-edicao-anotacao').addEventListener('click', () => { document.getElementById('modal-editar-anotacao').style.display = 'none'; });
+if(document.getElementById('btn-salvar-edicao-anotacao')) document.getElementById('btn-salvar-edicao-anotacao').addEventListener('click', async () => {
     const i = window.anotacaoEditIndex; const novaData = document.getElementById('edit-anotacao-data').value.trim(); const novaDisc = document.getElementById('edit-anotacao-disciplina').value; const novoTipo = document.getElementById('edit-anotacao-tipo').value; const novoTexto = document.getElementById('edit-anotacao-texto').value.trim();
     if (novoTexto === "" || novaData === "") return await sysAlert("Data e Descrição são campos obrigatórios.", "Aviso");
-    alunoAnotacaoAtual.anotacoes[i] = { data: novaData, disciplina: novaDisc, tipo: novoTipo, texto: novoTexto };
-    temAlteracoesNaoSalvas = true; document.getElementById('modal-editar-anotacao').style.display = 'none'; atualizarListaAnotacoesVisuais(); renderizarTabela(); await window.salvarDadosNaNuvem();
+    alunoAnotacaoAtual.anotacoes[i] = { data: novaData, disciplina: novaDisc, tipo: novoTipo, texto: novoTexto }; temAlteracoesNaoSalvas = true; document.getElementById('modal-editar-anotacao').style.display = 'none'; atualizarListaAnotacoesVisuais(); renderizarTabela(); await window.salvarDadosNaNuvem();
     if(typeof registrarLog === 'function') { if(novoTipo === "Ocorrência") { registrarLog(`Editou uma Ocorrência do educando: ${alunoAnotacaoAtual.nome}.`, { isOcorrencia: true, lida: false, textoOcorrencia: novoTexto, alunoNome: alunoAnotacaoAtual.nome }); } else { registrarLog(`Editou um registro (${novoTipo}) do educando: ${alunoAnotacaoAtual.nome}.`); } }
 });
 
@@ -575,16 +505,13 @@ window.excluirAnotacao = async function(indexReal) {
     }
 }
 
-document.getElementById('btn-fechar-anotacoes').addEventListener('click', () => { document.getElementById('modal-anotacoes-aluno').style.display = 'none'; alunoAnotacaoAtual = null; });
-
-document.getElementById('btn-salvar-anotacao').addEventListener('click', async () => {
+if(document.getElementById('btn-fechar-anotacoes')) document.getElementById('btn-fechar-anotacoes').addEventListener('click', () => { document.getElementById('modal-anotacoes-aluno').style.display = 'none'; alunoAnotacaoAtual = null; });
+if(document.getElementById('btn-salvar-anotacao')) document.getElementById('btn-salvar-anotacao').addEventListener('click', async () => {
     const texto = document.getElementById('texto-nova-anotacao').value.trim(); const tipo = document.getElementById('tipo-nova-anotacao').value;
     if (texto === "") return await sysAlert("Escreva uma descrição antes de salvar.", "Aviso");
     const disciplinaAtual = document.getElementById('filtro-disciplina').value || "Geral"; const dataAtual = new Date().toLocaleDateString('pt-BR');
     if (!alunoAnotacaoAtual.anotacoes) alunoAnotacaoAtual.anotacoes = [];
-    alunoAnotacaoAtual.anotacoes.push({ data: dataAtual, disciplina: disciplinaAtual, tipo: tipo, texto: texto });
-    temAlteracoesNaoSalvas = true; document.getElementById('texto-nova-anotacao').value = ""; document.getElementById('tipo-nova-anotacao').value = "Anotação";
-    atualizarListaAnotacoesVisuais(); renderizarTabela(); await window.salvarDadosNaNuvem(); 
+    alunoAnotacaoAtual.anotacoes.push({ data: dataAtual, disciplina: disciplinaAtual, tipo: tipo, texto: texto }); temAlteracoesNaoSalvas = true; document.getElementById('texto-nova-anotacao').value = ""; document.getElementById('tipo-nova-anotacao').value = "Anotação"; atualizarListaAnotacoesVisuais(); renderizarTabela(); await window.salvarDadosNaNuvem(); 
     if(typeof registrarLog === 'function') { if(tipo === "Ocorrência") { registrarLog(`Registrou uma Ocorrência para o educando: ${alunoAnotacaoAtual.nome}.`, { isOcorrencia: true, lida: false, textoOcorrencia: texto, alunoNome: alunoAnotacaoAtual.nome }); } else { registrarLog(`Registrou uma Anotação Pedagógica para o educando: ${alunoAnotacaoAtual.nome}.`); } }
 });
 
@@ -593,17 +520,12 @@ document.getElementById('btn-salvar-anotacao').addEventListener('click', async (
 // =========================================================
 window.gerarPromptIA = async function(idAluno, btnElement) {
     const { ctxTurma } = getContextosAtuais(); const aluno = bancoDeDados[ctxTurma].alunos.find(a => a.id === idAluno);
-    const legendas = { "0": "Não aplicável", "1": "Não desenvolvida", "2": "Em desenvolvimento", "3": "Em consolidação", "4": "Consolidada", "5": "Em destaque" };
-    const nomesMeses = ["", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    const legendas = { "0": "Não aplicável", "1": "Não desenvolvida", "2": "Em desenvolvimento", "3": "Em consolidação", "4": "Consolidada", "5": "Em destaque" }; const nomesMeses = ["", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
     const textoOriginal = btnElement.innerText; btnElement.innerText = "⏳ Buscando..."; btnElement.disabled = true;
 
-    try {
-        const querySnapshot = await db.collection("disciplinas").where(firebase.firestore.FieldPath.documentId(), '>=', `DISC_${ctxTurma}_`).where(firebase.firestore.FieldPath.documentId(), '<=', `DISC_${ctxTurma}_\uf8ff`).get();
-        querySnapshot.forEach((doc) => { bancoDeDados[doc.id] = doc.data(); });
-    } catch(e) { console.error(e); }
+    try { const querySnapshot = await db.collection("disciplinas").where(firebase.firestore.FieldPath.documentId(), '>=', `DISC_${ctxTurma}_`).where(firebase.firestore.FieldPath.documentId(), '<=', `DISC_${ctxTurma}_\uf8ff`).get(); querySnapshot.forEach((doc) => { bancoDeDados[doc.id] = doc.data(); }); } catch(e) { console.error(e); }
 
-    let prompt = `Atue como um coordenador pedagógico e redija um relatório avaliativo descritivo em parágrafos, em tom profissional e acolhedor, para os responsáveis do(a) estudante ${aluno.nome}.\n\nAbaixo está o histórico de progressão do educando ao longo dos meses nas disciplinas avaliadas:\n\n`;
-    let encontrouDados = false;
+    let prompt = `Atue como um coordenador pedagógico e redija um relatório avaliativo descritivo em parágrafos, em tom profissional e acolhedor, para os responsáveis do(a) estudante ${aluno.nome}.\n\nAbaixo está o histórico de progressão do educando ao longo dos meses nas disciplinas avaliadas:\n\n`; let encontrouDados = false;
 
     Object.keys(bancoDeDados).forEach(key => {
         if (key.startsWith(`DISC_${ctxTurma}_`)) {
@@ -617,52 +539,36 @@ window.gerarPromptIA = async function(idAluno, btnElement) {
                         mesesAvaliados.forEach(mes => { const val = notasHab[mes]; if(val !== "-1" && val !== undefined) notasAdicionadas.push(`${nomesMeses[mes]}: ${legendas[val]}`); });
                         if(notasAdicionadas.length > 0) { txtDisciplina += `- Habilidade: "${hab.texto}"\n  Evolução: ${notasAdicionadas.join(" ➔ ")}\n`; discTemNotas = true; encontrouDados = true; }
                     }
-                });
-                if(discTemNotas) prompt += txtDisciplina + "\n";
+                }); if(discTemNotas) prompt += txtDisciplina + "\n";
             }
         }
     });
 
     if(!encontrouDados) prompt += "(Ainda não há avaliações quantitativas registradas no sistema.)\n\n";
-    if (aluno.anotacoes && aluno.anotacoes.length > 0) {
-        prompt += `\nAlém das notas, considere as seguintes ANOTAÇÕES QUALITATIVAS feitas pelos professores no dia a dia:\n`;
-        aluno.anotacoes.forEach(nota => { prompt += `📝 [Data: ${nota.data} | Disciplina: ${nota.disciplina}] -> "${nota.texto}"\n`; });
-        prompt += `\n⚠️ INSTRUÇÃO IMPORTANTE: Reescreva essas observações adequando-as para a devida FORMALIDADE PEDAGÓGICA exigida em um relatório oficial para os pais.\n\n`;
-    }
+    if (aluno.anotacoes && aluno.anotacoes.length > 0) { prompt += `\nAlém das notas, considere as seguintes ANOTAÇÕES QUALITATIVAS feitas pelos professores no dia a dia:\n`; aluno.anotacoes.forEach(nota => { prompt += `📝 [Data: ${nota.data} | Disciplina: ${nota.disciplina}] -> "${nota.texto}"\n`; }); prompt += `\n⚠️ INSTRUÇÃO IMPORTANTE: Reescreva essas observações adequando-as para a devida FORMALIDADE PEDAGÓGICA exigida em um relatório oficial para os pais.\n\n`; }
     prompt += `Elabore um texto fluido que resuma as conquistas, identifique pontos de maior progresso e sugira onde a família pode auxiliar em casa. Não invente dados fictícios.`;
-
-    navigator.clipboard.writeText(prompt).then(async () => { await sysAlert("🤖 Prompt copiado com sucesso!", "Sucesso"); }).catch(async () => { await sysAlert("Erro ao copiar para a área de transferência.", "Erro"); });
-    btnElement.innerText = textoOriginal; btnElement.disabled = false;
+    navigator.clipboard.writeText(prompt).then(async () => { await sysAlert("🤖 Prompt copiado com sucesso!", "Sucesso"); }).catch(async () => { await sysAlert("Erro ao copiar para a área de transferência.", "Erro"); }); btnElement.innerText = textoOriginal; btnElement.disabled = false;
 }
 
 // =========================================================
-// 10. EDIÇÃO RÁPIDA (ALTERAR NOME DO ALUNO)
+// 10. EDIÇÃO RÁPIDA E DOSSIÊ (ALUNO)
 // =========================================================
 window.editarNomeAluno = async function(idAluno) {
     const { ctxTurma } = getContextosAtuais(); const aluno = bancoDeDados[ctxTurma].alunos.find(a => a.id === idAluno); if (!aluno) return;
     const nomeAntigo = aluno.nome; const novoNome = await sysPrompt("Edite o nome do educando:", aluno.nome, "Editar Estudante");
-    if (novoNome !== null && novoNome.trim() !== "" && novoNome.trim() !== nomeAntigo) {
-        aluno.nome = novoNome.trim(); temAlteracoesNaoSalvas = true; if(window.logsPendentes) window.logsPendentes.push(`Alterou o nome de um educando (${nomeAntigo} ➔ ${aluno.nome})`); renderizarTabela();
-    }
+    if (novoNome !== null && novoNome.trim() !== "" && novoNome.trim() !== nomeAntigo) { aluno.nome = novoNome.trim(); temAlteracoesNaoSalvas = true; if(window.logsPendentes) window.logsPendentes.push(`Alterou o nome de um educando (${nomeAntigo} ➔ ${aluno.nome})`); renderizarTabela(); }
 }
 
-// =========================================================
-// 11. RENDERIZAÇÃO DA TABELA E DOSSIÊ DO ESTUDANTE
-// =========================================================
 window.abrirDossieAluno = async function(idAluno) {
     const { ctxTurma } = getContextosAtuais(); const aluno = bancoDeDados[ctxTurma].alunos.find(a => a.id === idAluno); if(!aluno) return;
     const modal = document.getElementById('modal-dossie-aluno'); const conteudo = document.getElementById('conteudo-dossie');
     document.getElementById('titulo-dossie').innerText = `Ficha do Estudante: ${aluno.nome}`; document.getElementById('btn-ia-ficha').setAttribute('onclick', `gerarPromptIA(${aluno.id}, this)`);
     conteudo.innerHTML = "<p style='text-align:center; padding: 20px;'>⏳ Buscando informações no banco de dados...</p>"; modal.style.display = "flex";
 
-    try {
-        const querySnapshot = await db.collection("disciplinas").where(firebase.firestore.FieldPath.documentId(), '>=', `DISC_${ctxTurma}_`).where(firebase.firestore.FieldPath.documentId(), '<=', `DISC_${ctxTurma}_\uf8ff`).get();
-        querySnapshot.forEach((doc) => { bancoDeDados[doc.id] = doc.data(); });
-    } catch(e) { console.error("Erro ao buscar disciplinas para a ficha:", e); }
+    try { const querySnapshot = await db.collection("disciplinas").where(firebase.firestore.FieldPath.documentId(), '>=', `DISC_${ctxTurma}_`).where(firebase.firestore.FieldPath.documentId(), '<=', `DISC_${ctxTurma}_\uf8ff`).get(); querySnapshot.forEach((doc) => { bancoDeDados[doc.id] = doc.data(); }); } catch(e) { console.error("Erro ao buscar disciplinas para a ficha:", e); }
 
     const legendas = { "0": "Não aplicável", "1": "Não desenvolvida", "2": "Em desenvolvimento", "3": "Em consolidação", "4": "Consolidada", "5": "Em destaque" };
-    let html = `<div style="margin-bottom: 20px;"><h3 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px;">📊 Progresso Acadêmico (Últimas Avaliações)</h3>`;
-    let temNotas = false;
+    let html = `<div style="margin-bottom: 20px;"><h3 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px;">📊 Progresso Acadêmico (Últimas Avaliações)</h3>`; let temNotas = false;
 
     Object.keys(bancoDeDados).forEach(key => {
         if (key.startsWith(`DISC_${ctxTurma}_`)) {
@@ -681,46 +587,33 @@ window.abrirDossieAluno = async function(idAluno) {
                             }
                         }
                     }
-                });
-                htmlDisc += `</ul></div>`; if(discTemHabs) html += htmlDisc;
+                }); htmlDisc += `</ul></div>`; if(discTemHabs) html += htmlDisc;
             }
         }
     });
 
-    if(!temNotas) html += `<p style="font-size: 13px; color: #666; font-style: italic;">Ainda não há avaliações quantitativas registradas no sistema.</p>`;
-    html += `</div>`;
-
-    let anotacoesComuns = []; let ocorrencias = [];
-    if (aluno.anotacoes && aluno.anotacoes.length > 0) { aluno.anotacoes.forEach(nota => { if (nota.tipo === "Ocorrência") ocorrencias.push(nota); else anotacoesComuns.push(nota); }); }
+    if(!temNotas) html += `<p style="font-size: 13px; color: #666; font-style: italic;">Ainda não há avaliações quantitativas registradas no sistema.</p>`; html += `</div>`;
+    let anotacoesComuns = []; let ocorrencias = []; if (aluno.anotacoes && aluno.anotacoes.length > 0) { aluno.anotacoes.forEach(nota => { if (nota.tipo === "Ocorrência") ocorrencias.push(nota); else anotacoesComuns.push(nota); }); }
 
     html += `<div style="margin-top: 20px; border-top: 2px dashed #ddd; padding-top: 15px;"><h3 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px;">📝 Anotações Pedagógicas</h3>`;
-    if (anotacoesComuns.length > 0) {
-        for (let i = anotacoesComuns.length - 1; i >= 0; i--) {
-            const nota = anotacoesComuns[i];
-            html += `<div class="bloco-registro-dossie" style="background: white; border-left: 4px solid var(--cor-secundaria); padding: 10px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative;"><button class="btn-ocultar-print no-print" onclick="this.parentElement.classList.toggle('oculto-impressao'); this.innerText = this.parentElement.classList.contains('oculto-impressao') ? '👁️ Revelar na impressão' : '🙈 Esconder na impressão';" title="Esconder isso ao imprimir a ficha">🙈 Esconder na impressão</button><p style="font-size: 12px; color: #666; margin: 0 0 5px 0; padding-right: 70px;">📅 <b>${nota.data}</b> | 📍 ${nota.disciplina}</p><p style="font-size: 14px; margin: 0; white-space: pre-wrap; color: #333;">${nota.texto}</p></div>`;
-        }
-    } else { html += `<p style="font-size: 13px; color: #666; font-style: italic;">Nenhuma anotação pedagógica registrada.</p>`; }
-    html += `</div>`;
+    if (anotacoesComuns.length > 0) { for (let i = anotacoesComuns.length - 1; i >= 0; i--) { const nota = anotacoesComuns[i]; html += `<div class="bloco-registro-dossie" style="background: white; border-left: 4px solid var(--cor-secundaria); padding: 10px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative;"><button class="btn-ocultar-print no-print" onclick="this.parentElement.classList.toggle('oculto-impressao'); this.innerText = this.parentElement.classList.contains('oculto-impressao') ? '👁️ Revelar na impressão' : '🙈 Esconder na impressão';" title="Esconder isso ao imprimir a ficha">🙈 Esconder na impressão</button><p style="font-size: 12px; color: #666; margin: 0 0 5px 0; padding-right: 70px;">📅 <b>${nota.data}</b> | 📍 ${nota.disciplina}</p><p style="font-size: 14px; margin: 0; white-space: pre-wrap; color: #333;">${nota.texto}</p></div>`; } } 
+    else { html += `<p style="font-size: 13px; color: #666; font-style: italic;">Nenhuma anotação pedagógica registrada.</p>`; } html += `</div>`;
 
     html += `<div style="margin-top: 20px; border-top: 2px dashed #ddd; padding-top: 15px;"><h3 style="color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px;">⚠️ Ocorrências Disciplinares</h3>`;
-    if (ocorrencias.length > 0) {
-        for (let i = ocorrencias.length - 1; i >= 0; i--) {
-            const nota = ocorrencias[i];
-            html += `<div class="bloco-registro-dossie" style="background: white; border-left: 4px solid var(--cor-borda); padding: 10px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative;"><button class="btn-ocultar-print no-print" onclick="this.parentElement.classList.toggle('oculto-impressao'); this.innerText = this.parentElement.classList.contains('oculto-impressao') ? '👁️ Revelar na impressão' : '🙈 Esconder na impressão';" title="Esconder isso ao imprimir a ficha">🙈 Esconder na impressão</button><p style="font-size: 12px; color: #666; margin: 0 0 5px 0; padding-right: 70px;">📅 <b>${nota.data}</b> | 📍 ${nota.disciplina}</p><p style="font-size: 14px; margin: 0; white-space: pre-wrap; color: #333;">${nota.texto}</p></div>`;
-        }
-    } else { html += `<p style="font-size: 13px; color: #666; font-style: italic;">Nenhuma ocorrência disciplinar registrada.</p>`; }
-    html += `</div>`;
+    if (ocorrencias.length > 0) { for (let i = ocorrencias.length - 1; i >= 0; i--) { const nota = ocorrencias[i]; html += `<div class="bloco-registro-dossie" style="background: white; border-left: 4px solid var(--cor-borda); padding: 10px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative;"><button class="btn-ocultar-print no-print" onclick="this.parentElement.classList.toggle('oculto-impressao'); this.innerText = this.parentElement.classList.contains('oculto-impressao') ? '👁️ Revelar na impressão' : '🙈 Esconder na impressão';" title="Esconder isso ao imprimir a ficha">👁️ Imprimir</button><p style="font-size: 12px; color: #666; margin: 0 0 5px 0; padding-right: 70px;">📅 <b>${nota.data}</b> | 📍 ${nota.disciplina}</p><p style="font-size: 14px; margin: 0; white-space: pre-wrap; color: #333;">${nota.texto}</p></div>`; } } 
+    else { html += `<p style="font-size: 13px; color: #666; font-style: italic;">Nenhuma ocorrência disciplinar registrada.</p>`; } html += `</div>`;
 
     conteudo.innerHTML = html;
 };
 
 window.imprimirDossie = function() {
-    const conteudo = document.getElementById('conteudo-dossie').innerHTML; const titulo = document.getElementById('titulo-dossie').innerText;
-    const janelaImpressao = window.open('', '', 'width=900,height=650');
-    janelaImpressao.document.write(`<html><head><title>${titulo}</title><style>* { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; color: #333; line-height: 1.5; } h1 { text-align: center; border-bottom: 3px solid #333; padding-bottom: 10px; margin-bottom: 30px; text-transform: uppercase; } h3 { color: #000; margin-top: 30px; } ul { list-style-type: none; padding-left: 0; } .bolinha { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 1px solid #333; } .cor-0 { background-color: #9e9e9e; } .cor-1 { background-color: #dc3545; } .cor-2 { background-color: #d39e00; } .cor-3 { background-color: #28a745; } .cor-4 { background-color: #007bff; } .cor-5 { background-color: #6f42c1; } .oculto-impressao { display: none !important; } @media print { .no-print { display: none; } }</style></head><body><h1>${titulo}</h1>${conteudo}<script>setTimeout(() => { window.print(); window.close(); }, 500);<\/script></body></html>`);
-    janelaImpressao.document.close();
+    const conteudo = document.getElementById('conteudo-dossie').innerHTML; const titulo = document.getElementById('titulo-dossie').innerText; const janelaImpressao = window.open('', '', 'width=900,height=650');
+    janelaImpressao.document.write(`<html><head><title>${titulo}</title><style>* { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; color: #333; line-height: 1.5; } h1 { text-align: center; border-bottom: 3px solid #333; padding-bottom: 10px; margin-bottom: 30px; text-transform: uppercase; } h3 { color: #000; margin-top: 30px; } ul { list-style-type: none; padding-left: 0; } .bolinha { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 1px solid #333; } .cor-0 { background-color: #9e9e9e; } .cor-1 { background-color: #dc3545; } .cor-2 { background-color: #d39e00; } .cor-3 { background-color: #28a745; } .cor-4 { background-color: #007bff; } .cor-5 { background-color: #6f42c1; } .oculto-impressao { display: none !important; } @media print { .no-print { display: none; } }</style></head><body><h1>${titulo}</h1>${conteudo}<script>setTimeout(() => { window.print(); window.close(); }, 500);<\/script></body></html>`); janelaImpressao.document.close();
 }
 
+// =========================================================
+// 11. TABELA PRINCIPAL (NOTAS E VISIBILIDADE)
+// =========================================================
 window.salvarNotaTemporaria = function(idAluno, idHab, sel) { 
     const { ctxDisc } = getContextosAtuais(); const m = parseInt(selMes.options[selMes.selectedIndex].dataset.ordem); 
     if (!bancoDeDados[ctxDisc].notas[idAluno]) bancoDeDados[ctxDisc].notas[idAluno] = {}; 
@@ -731,9 +624,7 @@ window.salvarNotaTemporaria = function(idAluno, idHab, sel) {
 }
 
 window.alternarVisibilidadeHab = function(idHab) { const { ctxDisc } = getContextosAtuais(); const hab = bancoDeDados[ctxDisc].habilidades.find(h => h.id === idHab); if (hab) { hab.oculta = !hab.oculta; renderizarTabela(); } }
-
 window.alternarTodasHabilidades = function() { const { ctxDisc } = getContextosAtuais(); const m = parseInt(selMes.options[selMes.selectedIndex].dataset.ordem); const habs = bancoDeDados[ctxDisc].habilidades.filter(h => h.ordemMes <= m); if (habs.length === 0) return; let todas = habs.every(h => h.oculta); habs.forEach(h => h.oculta = !todas); renderizarTabela(); }
-
 window.alternarDesistente = function(id) { const { ctxTurma } = getContextosAtuais(); const a = bancoDeDados[ctxTurma].alunos.find(x => x.id === id); if(a) { a.desistente = !a.desistente; temAlteracoesNaoSalvas = true; if(window.logsPendentes) window.logsPendentes.push(`Marcou educando ${a.nome} como ${a.desistente ? 'Desistente' : 'Ativo'}`); renderizarTabela(); } }
 
 window.renderizarTabela = function() {
@@ -778,18 +669,12 @@ window.renderizarTabela = function() {
     document.getElementById('corpo-tabela').innerHTML = tbodyHTML;
 }
 
-document.getElementById('btn-toggle-mes').addEventListener('click', async function() { 
+if(document.getElementById('btn-toggle-mes')) document.getElementById('btn-toggle-mes').addEventListener('click', async function() { 
     const { ctxDisc } = getContextosAtuais(); const mesId = selMes.value; const discNome = document.getElementById('filtro-disciplina').value;
     if (!bancoDeDados[ctxDisc].mesesFechados[mesId]) { 
-        if (await sysConfirm(`Fechar o mês? O salvamento na nuvem será feito agora.`, "Atenção")) { 
-            bancoDeDados[ctxDisc].mesesFechados[mesId] = true; verificarEstadoDoMes(); const salvo = await window.salvarDadosNaNuvem();
-            if (!salvo) { bancoDeDados[ctxDisc].mesesFechados[mesId] = false; verificarEstadoDoMes(); } else { if(typeof registrarLog === 'function') registrarLog(`Fechou o mês ${mesId} para a disciplina ${discNome}.`); }
-        } 
+        if (await sysConfirm(`Fechar o mês? O salvamento na nuvem será feito agora.`, "Atenção")) { bancoDeDados[ctxDisc].mesesFechados[mesId] = true; verificarEstadoDoMes(); const salvo = await window.salvarDadosNaNuvem(); if (!salvo) { bancoDeDados[ctxDisc].mesesFechados[mesId] = false; verificarEstadoDoMes(); } else { if(typeof registrarLog === 'function') registrarLog(`Fechou o mês ${mesId} para a disciplina ${discNome}.`); } } 
     } else { 
-        if (await sysConfirm(`Reabrir o mês? O salvamento na nuvem será feito agora.`, "Atenção")) { 
-            bancoDeDados[ctxDisc].mesesFechados[mesId] = false; verificarEstadoDoMes(); const salvo = await window.salvarDadosNaNuvem();
-            if (!salvo) { bancoDeDados[ctxDisc].mesesFechados[mesId] = true; verificarEstadoDoMes(); } else { if(typeof registrarLog === 'function') registrarLog(`Reabriu o mês ${mesId} para a disciplina ${discNome}.`); }
-        } 
+        if (await sysConfirm(`Reabrir o mês? O salvamento na nuvem será feito agora.`, "Atenção")) { bancoDeDados[ctxDisc].mesesFechados[mesId] = false; verificarEstadoDoMes(); const salvo = await window.salvarDadosNaNuvem(); if (!salvo) { bancoDeDados[ctxDisc].mesesFechados[mesId] = true; verificarEstadoDoMes(); } else { if(typeof registrarLog === 'function') registrarLog(`Reabriu o mês ${mesId} para a disciplina ${discNome}.`); } } 
     } 
 });
 
@@ -807,7 +692,7 @@ function verificarEstadoDoMes() {
 }
 
 // =========================================================
-// 12. MODAIS DE NEGÓCIO E SINO
+// 12. MODAIS DE NEGÓCIO (GERENCIAMENTO DE ALUNOS E HABS)
 // =========================================================
 window.mudarAbaAlu = function(a) { 
     ['add', 'copiar', 'mover', 'excluir'].forEach(aba => { document.getElementById(`aba-alu-${aba}`).style.display = a === aba ? 'block' : 'none'; document.getElementById(`tab-alu-${aba}`).className = a === aba ? 'tab-btn ativa' : 'tab-btn'; });
@@ -819,8 +704,8 @@ window.mudarAbaAlu = function(a) {
 }
 
 const mAlu = document.getElementById('modal-gerenciar-alu'); 
-document.getElementById('btn-modal-alu-cancelar').addEventListener('click', () => { mAlu.style.display = "none"; });
-document.getElementById('btn-modal-alu-confirmar').addEventListener('click', async () => { 
+if(document.getElementById('btn-modal-alu-cancelar')) document.getElementById('btn-modal-alu-cancelar').addEventListener('click', () => { mAlu.style.display = "none"; });
+if(document.getElementById('btn-modal-alu-confirmar')) document.getElementById('btn-modal-alu-confirmar').addEventListener('click', async () => { 
     const { ctxTurma } = getContextosAtuais(); const mOrd = parseInt(selMes.options[selMes.selectedIndex].dataset.ordem); 
     const isAdd = document.getElementById('tab-alu-add').classList.contains('ativa'); const isCopiar = document.getElementById('tab-alu-copiar').classList.contains('ativa'); const isMover = document.getElementById('tab-alu-mover').classList.contains('ativa'); const isExcluir = document.getElementById('tab-alu-excluir').classList.contains('ativa'); 
     
@@ -848,25 +733,63 @@ document.getElementById('btn-modal-alu-confirmar').addEventListener('click', asy
     mAlu.style.display = "none"; renderizarTabela(); 
 });
 
+window.mudarAbaHab = function(a) { 
+    document.getElementById('aba-hab-add').style.display = a === 'add' ? 'block' : 'none'; document.getElementById('aba-hab-copiar').style.display = a === 'copiar' ? 'block' : 'none'; document.getElementById('aba-hab-excluir').style.display = a === 'excluir' ? 'block' : 'none'; document.getElementById('tab-hab-add').className = a === 'add' ? 'tab-btn ativa' : 'tab-btn'; document.getElementById('tab-hab-copiar').className = a === 'copiar' ? 'tab-btn ativa' : 'tab-btn'; document.getElementById('tab-hab-excluir').className = a === 'excluir' ? 'tab-btn ativa' : 'tab-btn'; 
+    const { ctxDisc } = getContextosAtuais(); const m = parseInt(selMes.options[selMes.selectedIndex].dataset.ordem); const habs = bancoDeDados[ctxDisc].habilidades.filter(h => h.ordemMes <= m); 
+    if(a === 'copiar') { const l = document.getElementById('lista-checkbox-habs-copiar'); l.innerHTML = ""; habs.forEach(h => { l.innerHTML += `<div class="checkbox-item"><input type="checkbox" value="${h.id}" id="hc_${h.id}" checked> <label for="hc_${h.id}">${h.texto}</label></div>`; }); if(habs.length === 0) l.innerHTML="<p>Vazio</p>"; } 
+    else if(a === 'excluir') { const l = document.getElementById('lista-checkbox-habs-excluir'); l.innerHTML = ""; habs.forEach(h => { l.innerHTML += `<div class="checkbox-item"><input type="checkbox" value="${h.id}" id="he_${h.id}"> <label for="he_${h.id}">${h.texto}</label></div>`; }); if(habs.length === 0) l.innerHTML="<p>Vazio</p>"; } 
+}
+
+const mHab = document.getElementById('modal-gerenciar-hab'); 
+if(document.getElementById('btn-modal-hab-confirmar')) document.getElementById('btn-modal-hab-confirmar').addEventListener('click', async () => { 
+    const { ctxDisc } = getContextosAtuais(); const isAbaAdd = document.getElementById('tab-hab-add').classList.contains('ativa'); const isAbaCopiar = document.getElementById('tab-hab-copiar').classList.contains('ativa'); const mOrd = parseInt(selMes.options[selMes.selectedIndex].dataset.ordem); const mNom = selMes.options[selMes.selectedIndex].text; 
+    if (isAbaAdd) { 
+        const l = document.getElementById('texto-add-hab').value.split('\n').map(x => x.trim()).filter(x => x !== ""); 
+        if (l.length > 0) { temAlteracoesNaoSalvas = true; l.forEach(x => bancoDeDados[ctxDisc].habilidades.push({ id: Date.now() + Math.random(), texto: x, ordemMes: mOrd, nomeMes: mNom, oculta: false })); if(window.logsPendentes) window.logsPendentes.push(`Adicionou ${l.length} nova(s) habilidade(s)`); }
+    } else if (isAbaCopiar) { 
+        const dCtx = montarIDContextoDisciplina(montarIDContextoTurma(document.getElementById('dest-hab-polo').value, document.getElementById('dest-hab-turno').value, document.getElementById('dest-hab-turma').value), document.getElementById('dest-hab-disciplina').value); if (!dCtx || dCtx === ctxDisc) return await sysAlert("Destino inválido.", "Erro"); 
+        const c = document.querySelectorAll('#lista-checkbox-habs-copiar input:checked'); if (c.length === 0) return await sysAlert("Selecione pelo menos uma habilidade.", "Aviso"); 
+        let dd = { habilidades: [], mesesFechados: {}, notas: {} }; const doc = await db.collection("disciplinas").doc(dCtx).get(); if (doc.exists) dd = doc.data(); 
+        c.forEach(x => { const h = bancoDeDados[ctxDisc].habilidades.find(y => y.id === parseFloat(x.value)); if(h) dd.habilidades.push({ id: Date.now() + Math.random(), texto: h.texto, ordemMes: mOrd, nomeMes: mNom, oculta: false }); }); 
+        await db.collection("disciplinas").doc(dCtx).set(dd); if(typeof registrarLog === 'function') registrarLog(`Copiou habilidades para a turma ${document.getElementById('dest-hab-turma').value}.`); await sysAlert("Copiado pra nuvem!", "Sucesso"); 
+    } else { 
+        const c = document.querySelectorAll('#lista-checkbox-habs-excluir input:checked'); if (c.length === 0) return await sysAlert("Selecione pelo menos uma habilidade.", "Aviso"); 
+        if(await sysConfirm("Excluir definitivamente?", "Cuidado")) { c.forEach(x => { bancoDeDados[ctxDisc].habilidades = bancoDeDados[ctxDisc].habilidades.filter(h => h.id !== parseFloat(x.value)); }); temAlteracoesNaoSalvas = true; if(window.logsPendentes) window.logsPendentes.push(`Excluiu habilidade(s)`); } else return; 
+    } 
+    mHab.style.display = "none"; renderizarTabela(); 
+});
+
+window.moverHabilidade = function(idHab, direcao) {
+    const { ctxDisc } = getContextosAtuais(); if (!bancoDeDados[ctxDisc] || !bancoDeDados[ctxDisc].habilidades) return;
+    const habs = bancoDeDados[ctxDisc].habilidades; const index = habs.findIndex(h => h.id === idHab); if (index < 0) return;
+    if (direcao === -1 && index > 0) { const temp = habs[index]; habs[index] = habs[index - 1]; habs[index - 1] = temp; } 
+    else if (direcao === 1 && index < habs.length - 1) { const temp = habs[index]; habs[index] = habs[index + 1]; habs[index + 1] = temp; } else { return; }
+    temAlteracoesNaoSalvas = true; if(window.logsPendentes) window.logsPendentes.push(`Reordenou a posição de uma habilidade`); renderizarTabela();
+}
+
+window.editarTextoHabilidade = async function(idHab) {
+    const { ctxDisc } = getContextosAtuais(); const hab = bancoDeDados[ctxDisc].habilidades.find(h => h.id === idHab); if (!hab) return;
+    const novoTexto = await sysPrompt("Edite o texto da habilidade:", hab.texto, "Editar Habilidade", true);
+    if (novoTexto !== null && novoTexto.trim() !== "" && novoTexto.trim() !== hab.texto) { hab.texto = novoTexto.trim(); temAlteracoesNaoSalvas = true; if(window.logsPendentes) window.logsPendentes.push(`Editou o texto de uma habilidade`); renderizarTabela(); }
+}
+
+// =========================================================
+// 13. SISTEMA DE NOTIFICAÇÕES (SINO E CADERNO PESSOAL)
+// =========================================================
 let unsubscribeNotificacoes = null; let ultimaAuditoriaSnap = [];
 window.iniciarOuvinteNotificacoes = function() {
     if (!usuarioPermissoes || !auth.currentUser) return;
     document.getElementById('container-sino').style.display = 'flex'; document.getElementById('btn-caderno-prof').style.display = 'block';
-    if (unsubscribeNotificacoes) unsubscribeNotificacoes();
-    carregarMeuCaderno();
-    const db = firebase.firestore();
+    if (unsubscribeNotificacoes) unsubscribeNotificacoes(); carregarMeuCaderno(); const db = firebase.firestore();
     unsubscribeNotificacoes = db.collection("sistema").doc("auditoria").onSnapshot((doc) => { if (doc.exists) ultimaAuditoriaSnap = doc.data().registros || []; window.forcarAtualizacaoSino(); });
 }
 
 window.forcarAtualizacaoSino = function() {
     if (!usuarioPermissoes || !auth.currentUser) return;
     const emailTratado = auth.currentUser.email.trim().toLowerCase(); const meuNomeUsuario = emailTratado.split('@')[0];
-    const isCoord = usuarioPermissoes.perfil === 'admin' || usuarioPermissoes.perfil === 'coordenacao';
-    let notificacoesAtivas = [];
-    if (isCoord) { notificacoesAtivas = ultimaAuditoriaSnap.filter(r => r.isOcorrencia && !r.lida); } 
-    else { notificacoesAtivas = ultimaAuditoriaSnap.filter(r => r.isOcorrencia && r.lida && r.usuario === meuNomeUsuario && !r.cienteProf); }
-    const hoje = new Date().toISOString().split('T')[0];
-    const lembretes = (window.meuCaderno || []).filter(n => n.dataLembrete && n.dataLembrete <= hoje && !n.concluido);
+    const isCoord = usuarioPermissoes.perfil === 'admin' || usuarioPermissoes.perfil === 'coordenacao'; let notificacoesAtivas = [];
+    if (isCoord) { notificacoesAtivas = ultimaAuditoriaSnap.filter(r => r.isOcorrencia && !r.lida); } else { notificacoesAtivas = ultimaAuditoriaSnap.filter(r => r.isOcorrencia && r.lida && r.usuario === meuNomeUsuario && !r.cienteProf); }
+    const hoje = new Date().toISOString().split('T')[0]; const lembretes = (window.meuCaderno || []).filter(n => n.dataLembrete && n.dataLembrete <= hoje && !n.concluido);
     lembretes.forEach(l => { notificacoesAtivas.push({ isLembrete: true, idAnotacao: l.id, categoria: l.categoria, texto: l.texto, dataLembrete: l.dataLembrete }); });
     atualizarSino(notificacoesAtivas, isCoord);
 }
@@ -885,17 +808,11 @@ function atualizarSino(notifs, isCoord) {
 }
 
 window.marcarCienteProfessor = async function(timestamp) {
-    try {
-        const db = firebase.firestore(); const docRef = db.collection("sistema").doc("auditoria"); const docSnap = await docRef.get();
-        if (docSnap.exists) { let histNuvem = docSnap.data().registros; let index = histNuvem.findIndex(l => l.timestamp === timestamp); if (index !== -1) { histNuvem[index].cienteProf = true; await docRef.set({ registros: histNuvem }); document.getElementById('dropdown-notificacoes').style.display = 'none'; } }
-    } catch (e) { console.error(e); }
+    try { const db = firebase.firestore(); const docRef = db.collection("sistema").doc("auditoria"); const docSnap = await docRef.get(); if (docSnap.exists) { let histNuvem = docSnap.data().registros; let index = histNuvem.findIndex(l => l.timestamp === timestamp); if (index !== -1) { histNuvem[index].cienteProf = true; await docRef.set({ registros: histNuvem }); document.getElementById('dropdown-notificacoes').style.display = 'none'; } } } catch (e) { console.error(e); }
 }
 
-document.getElementById('container-sino').addEventListener('click', (e) => { const dropdown = document.getElementById('dropdown-notificacoes'); if(e.target.closest('.notificacoes-dropdown') && !e.target.closest('.notificacao-item')) return; dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none'; });
+if(document.getElementById('container-sino')) document.getElementById('container-sino').addEventListener('click', (e) => { const dropdown = document.getElementById('dropdown-notificacoes'); if(e.target.closest('.notificacoes-dropdown') && !e.target.closest('.notificacao-item')) return; dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none'; });
 
-// =========================================================
-// 15. CADERNO PESSOAL DO PROFESSOR (ISOLADO)
-// =========================================================
 window.meuCaderno = [];
 window.carregarMeuCaderno = async function() { if (!auth.currentUser) return; const nomeUsuario = auth.currentUser.email.trim().toLowerCase().split('@')[0]; try { const db = firebase.firestore(); const doc = await db.collection("sistema").doc("caderno_" + nomeUsuario).get(); if (doc.exists) { window.meuCaderno = doc.data().anotacoes || []; } else { window.meuCaderno = []; } window.forcarAtualizacaoSino(); } catch(e) { console.error(e); } }
 window.abrirMeuCaderno = function() { document.getElementById('modal-caderno-prof').style.display = 'flex'; document.getElementById('dropdown-notificacoes').style.display = 'none'; renderizarCadernoProf(); }
@@ -915,7 +832,7 @@ window.renderizarCadernoProf = function() {
     });
 }
 
-document.getElementById('btn-salvar-caderno').addEventListener('click', async () => {
+if(document.getElementById('btn-salvar-caderno')) document.getElementById('btn-salvar-caderno').addEventListener('click', async () => {
     const cat = document.getElementById('caderno-nova-categoria').value; const ctx = document.getElementById('caderno-novo-contexto').value; const alvo = document.getElementById('caderno-novo-alvo').value.trim(); const dataLem = document.getElementById('caderno-nova-data').value; const texto = document.getElementById('caderno-novo-texto').value.trim();
     if (texto === "") return await sysAlert("A anotação não pode estar vazia.", "Aviso"); if (ctx !== 'Geral' && alvo === "") return await sysAlert(`Por favor, especifique qual ${ctx.toLowerCase()} é o alvo desta anotação.`, "Aviso");
     const nova = { id: Date.now(), categoria: cat, contexto: ctx, alvo: alvo, dataLembrete: dataLem, texto: texto, concluido: false }; window.meuCaderno.unshift(nova); 
@@ -928,7 +845,7 @@ window.excluirItemCaderno = async function(id) { if(await sysConfirm("Apagar est
 async function salvarCadernoNuvem() { const btn = document.getElementById('btn-salvar-caderno'); const oldText = btn.innerText; btn.innerText = "⏳ Salvando..."; btn.disabled = true; try { const db = firebase.firestore(); const nomeUsuario = auth.currentUser.email.trim().toLowerCase().split('@')[0]; await db.collection("sistema").doc("caderno_" + nomeUsuario).set({ anotacoes: window.meuCaderno }); } catch(e) { console.error(e); await sysAlert("Erro ao salvar o caderno na nuvem."); } btn.innerText = oldText; btn.disabled = false; }
 
 // =========================================================
-// MÓDULO DE DIRETÓRIO DE ESTUDANTES E PESQUISA GLOBAL
+// 14. PESQUISA GLOBAL E DIRETÓRIO
 // =========================================================
 (function() {
     const btnPesquisa = document.getElementById('btn-visao-pesquisa'); const telaPesquisa = document.getElementById('tela-pesquisa'); const inputPesquisa = document.getElementById('input-pesquisa-aluno'); const listaResultados = document.getElementById('lista-resultados-pesquisa');
@@ -1092,149 +1009,150 @@ async function salvarCadernoNuvem() { const btn = document.getElementById('btn-s
 })();
 
 // =========================================================
-// MÓDULO: INCLUSÃO GLOBAL DE ESTUDANTES (LOTE E RETROATIVO)
+// 15. MÓDULO DE GESTÃO CURRICULAR E INCLUSÃO LOTE/RETROATIVO
 // =========================================================
-
 (function() {
+    const poloLote = document.getElementById('hab-lote-polo'); const turnoLote = document.getElementById('hab-lote-turno'); const listaLote = document.getElementById('lista-checkbox-destinos-hab'); const btnSalvarLote = document.getElementById('btn-salvar-hab-lote');
+    if(poloLote && poloLote.options.length <= 1) { poloLote.appendChild(new Option("Polo 1", "polo1")); poloLote.appendChild(new Option("Polo 2", "polo2")); document.getElementById('hab-lote-mes-inicio').innerHTML = '<option value="1">Jan</option><option value="2" selected>Fev</option><option value="3">Mar</option><option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Ago</option><option value="9">Set</option><option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>'; document.getElementById('hab-lote-mes-fim').innerHTML = '<option value="1">Jan</option><option value="2">Fev</option><option value="3">Mar</option><option value="4">Abr</option><option value="5">Mai</option><option value="6">Jun</option><option value="7" selected>Jul</option><option value="8">Ago</option><option value="9">Set</option><option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>'; }
+    if(poloLote) poloLote.addEventListener('change', () => { turnoLote.innerHTML = '<option value="">Turno...</option>'; turnoLote.disabled = true; listaLote.innerHTML = '<p>Selecione o Turno.</p>'; if (!poloLote.value) return; turnoLote.appendChild(new Option("Manhã", "Manhã")); turnoLote.appendChild(new Option("Tarde", "Tarde")); turnoLote.disabled = false; });
+    if(turnoLote) turnoLote.addEventListener('change', () => {
+        if (!turnoLote.value) return; listaLote.innerHTML = '<p>⏳ Carregando disciplinas...</p>'; let html = '';
+        escola.polos[poloLote.value][turnoLote.value].forEach(turma => {
+            let disciplinas = poloLote.value === 'polo1' ? escola.disciplinas.polo1 : [...escola.disciplinas.polo2Base];
+            if (poloLote.value === 'polo2') { if (turma.includes('Infantil') || turma.includes('1º Ano')) disciplinas.push("Psicomotricidade"); else disciplinas.push("Jogos de Oposição"); }
+            let permitidas = usuarioPermissoes?.perfil === 'professor' ? disciplinas.filter(d => (usuarioPermissoes.acessos[poloLote.value]?.[turnoLote.value]?.[turma] || []).includes(d)) : disciplinas;
+            if (permitidas.length > 0) { html += `<div><strong>${turma}</strong><div style="display:grid; grid-template-columns:1fr 1fr;">`; permitidas.sort().forEach(disc => { html += `<label><input type="checkbox" class="check-destino-hab" value="DISC_TURMA_${poloLote.value}_${turnoLote.value}_${turma}_${disc}"> ${disc}</label>`; }); html += `</div></div>`; }
+        }); listaLote.innerHTML = html || '<p>Sem acesso a disciplinas.</p>';
+    });
+
+    if(btnSalvarLote) btnSalvarLote.addEventListener('click', async () => {
+        const checkboxes = document.querySelectorAll('.check-destino-hab:checked'); const mIni = parseInt(document.getElementById('hab-lote-mes-inicio').value); const mFim = parseInt(document.getElementById('hab-lote-mes-fim').value); const texto = document.getElementById('hab-lote-texto').value.trim();
+        if (checkboxes.length === 0 || !texto) return; const linhas = texto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        if (!await sysConfirm(`Distribuir ${linhas.length} hab(s) em ${checkboxes.length} disciplina(s)?`)) return;
+        const db = firebase.firestore();
+        for (let chk of checkboxes) { const docRef = db.collection("disciplinas").doc(chk.value); const docSnap = await docRef.get(); let habs = docSnap.exists && docSnap.data().habilidades ? docSnap.data().habilidades : []; const novas = linhas.map(l => ({ id: Date.now()+Math.floor(Math.random()*1000), texto: l, mesInicio: mIni, mesFim: mFim })); await docRef.set({ habilidades: [...habs, ...novas] }, { merge: true }); }
+        document.getElementById('hab-lote-texto').value = ""; sysAlert("Concluído!");
+    });
+
+    const editPolo = document.getElementById('hab-edit-polo'); const editTurno = document.getElementById('hab-edit-turno'); const editTurma = document.getElementById('hab-edit-turma'); const editDisc = document.getElementById('hab-edit-disciplina'); const btnBusca = document.getElementById('btn-buscar-habs-existentes'); const listaEdit = document.getElementById('lista-habs-existentes');
+    if(editPolo && editPolo.options.length <= 1) { editPolo.appendChild(new Option("Polo 1", "polo1")); editPolo.appendChild(new Option("Polo 2", "polo2")); }
+    if(editPolo) editPolo.addEventListener('change', () => { editTurno.innerHTML='<option value="">Turno...</option>'; editTurno.disabled=true; if(editPolo.value){editTurno.appendChild(new Option("Manhã", "Manhã")); editTurno.appendChild(new Option("Tarde", "Tarde")); editTurno.disabled=false;} });
+    if(editTurno) editTurno.addEventListener('change', () => { editTurma.innerHTML='<option value="">Turma...</option>'; editTurma.disabled=true; if(editTurno.value) {escola.polos[editPolo.value][editTurno.value].forEach(t => editTurma.appendChild(new Option(t,t))); editTurma.disabled=false;} });
+    if(editTurma) editTurma.addEventListener('change', () => { editDisc.innerHTML='<option value="">Disciplina...</option>'; editDisc.disabled=true; if(editTurma.value) {let d = editPolo.value==='polo1'?escola.disciplinas.polo1:[...escola.disciplinas.polo2Base]; d.forEach(x => editDisc.appendChild(new Option(x,x))); editDisc.disabled=false;} });
+    if(editDisc) editDisc.addEventListener('change', () => btnBusca.disabled = !editDisc.value);
+
+    function gerarOptionsMeses(selecionado) { const meses = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]; return meses.map((m, i) => `<option value="${i+1}" ${i+1 === selecionado ? 'selected' : ''}>${m}</option>`).join(''); }
+
+    window.habsCarregadas = [];
+    if(btnBusca) {
+        btnBusca.addEventListener('click', async () => {
+            const ctxDisc = `DISC_TURMA_${editPolo.value}_${editTurno.value}_${editTurma.value}_${editDisc.value}`; listaEdit.innerHTML = '<p style="text-align: center; color: #d39e00;">⏳ Buscando habilidades no banco de dados...</p>';
+            try {
+                const doc = await firebase.firestore().collection("disciplinas").doc(ctxDisc).get(); let habs = doc.exists && doc.data().habilidades ? doc.data().habilidades : [];
+                if (habs.length === 0) { listaEdit.innerHTML = '<p style="text-align: center; color: #999;">Nenhuma habilidade cadastrada para esta disciplina.</p>'; return; }
+                window.habsCarregadas = habs; let html = '';
+                habs.forEach((h, index) => {
+                    let mIni = h.mesInicio || 1; let mFim = h.mesFim || 12;
+                    html += `
+                    <div style="background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span style="font-weight: bold; color: #0056b3; font-size: 15px;">🎯 Habilidade ${index + 1}</span>
+                            <button class="btn-secundario" style="color:#dc3545; border-color:#dc3545; padding: 4px 8px; font-size: 11px; background: white; border-radius: 4px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#dc3545'; this.style.color='white';" onmouseout="this.style.background='white'; this.style.color='#dc3545';" onclick="iniciarOperacaoHab('${h.id}', '${ctxDisc}', 'excluir')">🗑️ Excluir</button>
+                        </div>
+                        <textarea id="edit-texto-${h.id}" class="input-login" style="height: 60px; resize: vertical; margin-bottom: 10px; font-size: 13px; width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 8px;">${h.texto}</textarea>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <label style="font-size: 12px; font-weight: bold; color: #555;">⏳ Início:</label><select id="edit-ini-${h.id}" class="input-login" style="margin-bottom: 0; width: 100px; border-radius: 4px;">${gerarOptionsMeses(mIni)}</select>
+                            <label style="font-size: 12px; font-weight: bold; color: #555; margin-left: 10px;">⏳ Expiração:</label><select id="edit-fim-${h.id}" class="input-login" style="margin-bottom: 0; width: 100px; border-radius: 4px;">${gerarOptionsMeses(mFim)}</select>
+                            <button class="btn-primario" style="margin-left: auto; padding: 8px 15px; background-color: #0056b3; border: none; border-radius: 4px; color: white; cursor: pointer; transition: 0.2s;" onmouseover="this.style.backgroundColor='#004494'" onmouseout="this.style.backgroundColor='#0056b3'" onclick="iniciarOperacaoHab('${h.id}', '${ctxDisc}', 'atualizar')">🔄 Atualizar Habilidade</button>
+                        </div>
+                    </div>`;
+                }); listaEdit.innerHTML = html;
+            } catch (e) { console.error(e); listaEdit.innerHTML = '<p style="text-align: center; color: #dc3545;">Erro ao buscar dados. Verifique a internet.</p>'; }
+        });
+    }
+
+    let operacaoAtual = null;
+    window.iniciarOperacaoHab = function(idHabStr, ctxDisc, acao) {
+        const idHab = parseFloat(idHabStr); const habOriginal = window.habsCarregadas.find(h => h.id === idHab); if(!habOriginal) return;
+        operacaoAtual = { idHab: idHab, ctxDisc: ctxDisc, acao: acao, textoOriginal: habOriginal.texto, novoTexto: document.getElementById(`edit-texto-${idHab}`)?.value || "", novoIni: parseInt(document.getElementById(`edit-ini-${idHab}`)?.value || 1), novoFim: parseInt(document.getElementById(`edit-fim-${idHab}`)?.value || 12) };
+        document.getElementById('titulo-modal-escopo-hab').innerText = acao === 'excluir' ? '🗑️ Alcance da Exclusão' : '🔄 Alcance da Atualização'; document.getElementById('modal-escopo-hab').style.display = 'flex';
+    }
+
+    window.fecharModalEscopoHab = function() { document.getElementById('modal-escopo-hab').style.display = 'none'; operacaoAtual = null; }
+
+    window.executarOperacaoHab = async function() {
+        if (!operacaoAtual) return; const { idHab, ctxDisc, acao, textoOriginal, novoTexto, novoIni, novoFim } = operacaoAtual;
+        const radios = document.getElementsByName('escopo-hab'); let escopoSelecionado = 'turma'; for (let r of radios) { if (r.checked) escopoSelecionado = r.value; }
+        const partes = ctxDisc.split('_'); const poloAt = partes[2]; const turnoAt = partes[3]; const turmaAt = partes[4]; const discAt = partes.slice(5).join('_'); 
+        let alvos = [];
+        if (escopoSelecionado === 'turma') alvos.push(ctxDisc);
+        else if (escopoSelecionado === 'turnos') { ['Manhã', 'Tarde'].forEach(t => { if (escola.polos[poloAt][t].includes(turmaAt)) alvos.push(`DISC_TURMA_${poloAt}_${t}_${turmaAt}_${discAt}`); }); } 
+        else if (escopoSelecionado === 'polo') { ['Manhã', 'Tarde'].forEach(t => { escola.polos[poloAt][t].forEach(tur => alvos.push(`DISC_TURMA_${poloAt}_${t}_${tur}_${discAt}`)); }); } 
+        else if (escopoSelecionado === 'global') { ['polo1', 'polo2'].forEach(p => { ['Manhã', 'Tarde'].forEach(t => { escola.polos[p][t].forEach(tur => alvos.push(`DISC_TURMA_${p}_${t}_${tur}_${discAt}`)); }); }); }
+        fecharModalEscopoHab(); if(btnBusca) btnBusca.innerText = "⏳ Atualizando nuvem...";
+
+        try {
+            const db = firebase.firestore(); let countAlterados = 0;
+            for (let alvo of alvos) {
+                const docRef = db.collection("disciplinas").doc(alvo); const doc = await docRef.get();
+                if (doc.exists && doc.data().habilidades) {
+                    let habs = doc.data().habilidades; let modificado = false;
+                    let index = habs.findIndex(h => h.id === idHab || h.texto.trim() === textoOriginal.trim());
+                    if (index !== -1) { if (acao === 'excluir') { habs.splice(index, 1); } else { habs[index].texto = novoTexto; habs[index].mesInicio = novoIni; habs[index].mesFim = novoFim; } modificado = true; }
+                    if (modificado) { await docRef.update({ habilidades: habs }); countAlterados++; if (typeof bancoDeDados !== 'undefined' && bancoDeDados[alvo]) bancoDeDados[alvo].habilidades = habs; }
+                }
+            }
+            sysAlert(`${acao === 'excluir' ? 'Exclusão' : 'Atualização'} aplicada com sucesso em ${countAlterados} turma(s).`);
+            if(btnBusca) { btnBusca.innerText = "🔍 Buscar Habilidades"; btnBusca.click(); }
+        } catch (e) { console.error(e); sysAlert("Erro ao processar as alterações.", "Erro"); if(btnBusca) btnBusca.innerText = "🔍 Buscar Habilidades"; }
+    }
+
     window.abrirModalNovoEstudante = function() {
         if (!document.getElementById('modal-novo-estudante')) {
             const modalHTML = `
                 <div id="modal-novo-estudante" class="modal-overlay" style="z-index: 100008; display: none;">
                     <div class="modal-box" style="max-width: 450px; overflow: visible;">
                         <h2 style="margin-top:0; color:var(--cor-primaria);">➕ Nova Matrícula</h2>
-                        
                         <p style="font-size: 12px; color: #666; margin-bottom: 10px;">Insira os educandos (um por linha):</p>
-                        <textarea id="input-nome-estudante" class="input-login" placeholder="Ex:&#10;Maria Silva&#10;João de Souza" style="height: 100px; resize: vertical; margin-bottom: 15px;"></textarea>
-
+                        <textarea id="input-nome-estudante" class="input-login" placeholder="Ex:&#10;Maria Silva&#10;João de Souza" style="height: 100px; resize: vertical; margin-bottom: 15px; border-radius: 4px;"></textarea>
                         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                            <div style="flex: 1;">
-                                <label style="font-size: 12px; font-weight: bold;">Mês de Entrada:</label>
-                                <select id="novo-estudante-mes" class="input-login" style="margin-bottom:0;">
-                                    <option value="1" selected>Janeiro (Aparece o ano todo)</option>
-                                    <option value="2">Fevereiro</option>
-                                    <option value="3">Março</option>
-                                    <option value="4">Abril</option>
-                                    <option value="5">Maio</option>
-                                    <option value="6">Junho</option>
-                                    <option value="7">Julho</option>
-                                    <option value="8">Agosto</option>
-                                    <option value="9">Setembro</option>
-                                    <option value="10">Outubro</option>
-                                    <option value="11">Novembro</option>
-                                    <option value="12">Dezembro</option>
-                                </select>
-                            </div>
+                            <div style="flex: 1;"><label style="font-size: 12px; font-weight: bold;">Mês de Entrada:</label><select id="novo-estudante-mes" class="input-login" style="margin-bottom:0; border-radius: 4px;"><option value="1" selected>Janeiro (Aparece o ano todo)</option><option value="2">Fevereiro</option><option value="3">Março</option><option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option><option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option></select></div>
                         </div>
-
                         <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                            <div style="flex: 1;">
-                                <label style="font-size: 12px; font-weight: bold;">Polo de Destino:</label>
-                                <select id="novo-estudante-polo" class="input-login" style="margin-bottom:0;"><option value="">Selecione...</option><option value="polo1">Polo 1</option><option value="polo2">Polo 2</option></select>
-                            </div>
-                            <div style="flex: 1;">
-                                <label style="font-size: 12px; font-weight: bold;">Turno de Destino:</label>
-                                <select id="novo-estudante-turno" class="input-login" style="margin-bottom:0;" disabled><option value="">Selecione...</option></select>
-                            </div>
+                            <div style="flex: 1;"><label style="font-size: 12px; font-weight: bold;">Polo de Destino:</label><select id="novo-estudante-polo" class="input-login" style="margin-bottom:0; border-radius: 4px;"><option value="">Selecione...</option><option value="polo1">Polo 1</option><option value="polo2">Polo 2</option></select></div>
+                            <div style="flex: 1;"><label style="font-size: 12px; font-weight: bold;">Turno de Destino:</label><select id="novo-estudante-turno" class="input-login" style="margin-bottom:0; border-radius: 4px;" disabled><option value="">Selecione...</option></select></div>
                         </div>
-                        
-                        <label style="font-size: 12px; font-weight: bold;">Turma de Destino:</label>
-                        <select id="novo-estudante-turma" class="input-login" disabled><option value="">Selecione...</option></select>
-
-                        <div class="modal-acoes" style="margin-top: 20px;">
-                            <button class="btn-secundario" onclick="document.getElementById('modal-novo-estudante').style.display='none'">Cancelar</button>
-                            <button class="btn-primario" id="btn-salvar-novo-estudante" style="background-color: #28a745;">Salvar Matrícula(s)</button>
-                        </div>
+                        <label style="font-size: 12px; font-weight: bold;">Turma de Destino:</label><select id="novo-estudante-turma" class="input-login" style="border-radius: 4px;" disabled><option value="">Selecione...</option></select>
+                        <div class="modal-acoes" style="margin-top: 20px;"><button class="btn-secundario" onclick="document.getElementById('modal-novo-estudante').style.display='none'">Cancelar</button><button class="btn-primario" id="btn-salvar-novo-estudante" style="background-color: #28a745;">Salvar Matrícula(s)</button></div>
                     </div>
                 </div>`;
             document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-            const selPolo = document.getElementById('novo-estudante-polo'); 
-            const selTurno = document.getElementById('novo-estudante-turno'); 
-            const selTurma = document.getElementById('novo-estudante-turma');
-
-            selPolo.addEventListener('change', () => { 
-                selTurno.innerHTML = '<option value="">Selecione...</option>'; selTurno.disabled = true; 
-                selTurma.innerHTML = '<option value="">Selecione...</option>'; selTurma.disabled = true; 
-                if(selPolo.value) { 
-                    selTurno.appendChild(new Option("Manhã", "Manhã")); selTurno.appendChild(new Option("Tarde", "Tarde")); 
-                    selTurno.disabled = false; 
-                } 
-            });
-
-            selTurno.addEventListener('change', () => { 
-                selTurma.innerHTML = '<option value="">Selecione...</option>'; selTurma.disabled = true; 
-                if(selTurno.value) { 
-                    escola.polos[selPolo.value][selTurno.value].forEach(t => selTurma.appendChild(new Option(t, t))); 
-                    selTurma.disabled = false; 
-                } 
-            });
+            const selPolo = document.getElementById('novo-estudante-polo'); const selTurno = document.getElementById('novo-estudante-turno'); const selTurma = document.getElementById('novo-estudante-turma');
+            selPolo.addEventListener('change', () => { selTurno.innerHTML = '<option value="">Selecione...</option>'; selTurno.disabled = true; selTurma.innerHTML = '<option value="">Selecione...</option>'; selTurma.disabled = true; if(selPolo.value) { selTurno.appendChild(new Option("Manhã", "Manhã")); selTurno.appendChild(new Option("Tarde", "Tarde")); selTurno.disabled = false; } });
+            selTurno.addEventListener('change', () => { selTurma.innerHTML = '<option value="">Selecione...</option>'; selTurma.disabled = true; if(selTurno.value) { escola.polos[selPolo.value][selTurno.value].forEach(t => selTurma.appendChild(new Option(t, t))); selTurma.disabled = false; } });
 
             document.getElementById('btn-salvar-novo-estudante').addEventListener('click', async () => {
-                const nomesRaw = document.getElementById('input-nome-estudante').value.trim(); 
-                const valMes = parseInt(document.getElementById('novo-estudante-mes').value);
-                const valPolo = selPolo.value; 
-                const valTurno = selTurno.value; 
-                const valTurma = selTurma.value;
-
+                const nomesRaw = document.getElementById('input-nome-estudante').value.trim(); const valMes = parseInt(document.getElementById('novo-estudante-mes').value); const valPolo = selPolo.value; const valTurno = selTurno.value; const valTurma = selTurma.value;
                 if(!nomesRaw || !valPolo || !valTurno || !valTurma) return sysAlert("Preencha todos os campos para continuar.");
-                
-                const nomes = nomesRaw.split('\n').map(n => n.trim()).filter(n => n !== "");
-                if (nomes.length === 0) return sysAlert("Insira pelo menos um nome válido.");
-
-                const btnAcao = document.getElementById('btn-salvar-novo-estudante'); 
-                btnAcao.disabled = true; btnAcao.innerText = "Salvando...";
+                const nomes = nomesRaw.split('\n').map(n => n.trim()).filter(n => n !== ""); if (nomes.length === 0) return sysAlert("Insira pelo menos um nome válido.");
+                const btnAcao = document.getElementById('btn-salvar-novo-estudante'); btnAcao.disabled = true; btnAcao.innerText = "Salvando...";
 
                 try {
-                    const ctxDestino = `TURMA_${valPolo}_${valTurno}_${valTurma}`; 
-                    const db = firebase.firestore(); 
-                    const docSnap = await db.collection("turmas").doc(ctxDestino).get();
-                    
+                    const ctxDestino = `TURMA_${valPolo}_${valTurno}_${valTurma}`; const db = firebase.firestore(); const docSnap = await db.collection("turmas").doc(ctxDestino).get();
                     let listaEstudantes = docSnap.exists && docSnap.data().alunos ? docSnap.data().alunos : []; 
-                    
-                    nomes.forEach((nomeStr, idx) => {
-                        listaEstudantes.push({ 
-                            id: Date.now() + Math.floor(Math.random() * 10000) + idx, // Garante ID único no lote
-                            nome: nomeStr, 
-                            desistente: false, 
-                            anotacoes: [], 
-                            mesEntrada: valMes 
-                        });
-                    });
-
+                    nomes.forEach((nomeStr, idx) => { listaEstudantes.push({ id: Date.now() + Math.floor(Math.random() * 10000) + idx, nome: nomeStr, desistente: false, anotacoes: [], mesEntrada: valMes }); });
                     await db.collection("turmas").doc(ctxDestino).set({ alunos: listaEstudantes }, { merge: true });
-
-                    // Injeta na memória local instantaneamente se a turma estiver em uso
-                    if (typeof bancoDeDados !== 'undefined') {
-                        if (bancoDeDados[ctxDestino]) {
-                            bancoDeDados[ctxDestino].alunos = listaEstudantes;
-                        } else {
-                            bancoDeDados[ctxDestino] = { alunos: listaEstudantes };
-                        }
-                    }
-
+                    if (typeof bancoDeDados !== 'undefined') { if (bancoDeDados[ctxDestino]) { bancoDeDados[ctxDestino].alunos = listaEstudantes; } else { bancoDeDados[ctxDestino] = { alunos: listaEstudantes }; } }
                     if (typeof registrarLog === 'function') registrarLog(`Matriculou ${nomes.length} educando(s) na turma ${valTurma}`);
-                    
-                    document.getElementById('input-nome-estudante').value = ''; 
-                    document.getElementById('modal-novo-estudante').style.display = 'none';
-                    
+                    document.getElementById('input-nome-estudante').value = ''; document.getElementById('modal-novo-estudante').style.display = 'none';
                     sysAlert(`${nomes.length} educando(s) cadastrado(s) com sucesso na turma ${valTurma}!`);
-                    
-                    // Atualiza a pesquisa e também a tabela de notas se ela estiver aberta na mesma turma
                     if (document.getElementById('btn-visao-pesquisa')) document.getElementById('btn-visao-pesquisa').click();
-                    if (typeof getContextosAtuais === 'function') {
-                        const { ctxTurma } = getContextosAtuais();
-                        if (ctxTurma === ctxDestino && typeof renderizarTabela === 'function') {
-                            renderizarTabela();
-                        }
-                    }
-
-                } catch(erro) { 
-                    console.error(erro); sysAlert("Erro ao tentar salvar no banco de dados."); 
-                } finally { 
-                    btnAcao.disabled = false; btnAcao.innerText = "Salvar Matrícula(s)"; 
-                }
+                    if (typeof getContextosAtuais === 'function') { const { ctxTurma } = getContextosAtuais(); if (ctxTurma === ctxDestino && typeof renderizarTabela === 'function') renderizarTabela(); }
+                } catch(erro) { console.error(erro); sysAlert("Erro ao tentar salvar no banco de dados."); } finally { btnAcao.disabled = false; btnAcao.innerText = "Salvar Matrícula(s)"; }
             });
         }
         document.getElementById('modal-novo-estudante').style.display = 'flex';
     };
 })();
+
